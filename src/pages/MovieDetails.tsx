@@ -1,16 +1,25 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Play, Plus, ThumbsUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { getMovieDetails } from '@/services/tmdbAPI';
+import { getMovieDetails, getMovieTrailers } from '@/services/tmdbAPI';
+import { trackMovieView, trackTrailerView } from '@/services/userBehaviorService';
 import { toast } from 'sonner';
 
 const MovieDetails = () => {
   const { id } = useParams();
   const [movie, setMovie] = useState(null);
+  const [trailers, setTrailers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [trailerOpen, setTrailerOpen] = useState(false);
+  const [selectedTrailer, setSelectedTrailer] = useState(null);
+
+  // Mock user ID - in a real app, you would get this from authentication
+  const mockUserId = "user123";
 
   useEffect(() => {
     const fetchMovie = async () => {
@@ -20,6 +29,15 @@ const MovieDetails = () => {
         setLoading(true);
         const data = await getMovieDetails(id);
         setMovie(data);
+        
+        // Track that the user viewed this movie
+        if (data) {
+          trackMovieView(mockUserId, data.id, data.title);
+        }
+        
+        // Fetch trailers
+        const trailerData = await getMovieTrailers(id);
+        setTrailers(trailerData);
       } catch (error) {
         console.error("Error fetching movie details:", error);
         toast.error("Failed to load movie details");
@@ -30,6 +48,16 @@ const MovieDetails = () => {
 
     fetchMovie();
   }, [id]);
+
+  const handlePlayTrailer = (trailer) => {
+    setSelectedTrailer(trailer);
+    setTrailerOpen(true);
+    
+    // Track that the user watched a trailer
+    if (movie) {
+      trackTrailerView(mockUserId, movie.id, movie.title);
+    }
+  };
 
   if (loading) {
     return (
@@ -141,10 +169,40 @@ const MovieDetails = () => {
               <p className="mb-6">{movie.overview}</p>
               
               <div className="flex flex-wrap gap-4 mb-8">
-                <Button size="lg" className="rounded-full gap-2">
-                  <Play className="h-5 w-5" />
-                  Play
-                </Button>
+                {trailers.length > 0 ? (
+                  <Dialog open={trailerOpen} onOpenChange={setTrailerOpen}>
+                    <DialogTrigger asChild>
+                      <Button 
+                        size="lg" 
+                        className="rounded-full gap-2"
+                        onClick={() => handlePlayTrailer(trailers[0])}
+                      >
+                        <Play className="h-5 w-5" />
+                        Watch Trailer
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-4xl p-0 bg-black">
+                      {selectedTrailer && (
+                        <div className="aspect-video w-full">
+                          <iframe
+                            width="100%"
+                            height="100%"
+                            src={`https://www.youtube.com/embed/${selectedTrailer.key}?autoplay=1`}
+                            title={selectedTrailer.name}
+                            frameBorder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          ></iframe>
+                        </div>
+                      )}
+                    </DialogContent>
+                  </Dialog>
+                ) : (
+                  <Button size="lg" className="rounded-full gap-2" disabled>
+                    <Play className="h-5 w-5" />
+                    No Trailers Available
+                  </Button>
+                )}
                 <Button variant="secondary" size="lg" className="rounded-full gap-2">
                   <Plus className="h-5 w-5" />
                   Add to Watchlist
@@ -167,6 +225,50 @@ const MovieDetails = () => {
                   </div>
                 )}
               </div>
+              
+              {/* Trailers section */}
+              {trailers.length > 1 && (
+                <div className="mt-8">
+                  <h2 className="text-xl font-semibold mb-4">Trailers & Teasers</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {trailers.map((trailer) => (
+                      <Dialog key={trailer.id}>
+                        <DialogTrigger asChild>
+                          <div 
+                            className="cursor-pointer relative aspect-video bg-gray-900 rounded-lg overflow-hidden"
+                            onClick={() => handlePlayTrailer(trailer)}
+                          >
+                            <img 
+                              src={`https://img.youtube.com/vi/${trailer.key}/mqdefault.jpg`} 
+                              alt={trailer.name}
+                              className="w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                              <Play className="h-12 w-12 text-white" />
+                            </div>
+                            <p className="absolute bottom-0 left-0 right-0 bg-black/70 p-2 text-sm truncate">
+                              {trailer.name}
+                            </p>
+                          </div>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-4xl p-0 bg-black">
+                          <div className="aspect-video w-full">
+                            <iframe
+                              width="100%"
+                              height="100%"
+                              src={`https://www.youtube.com/embed/${trailer.key}?autoplay=1`}
+                              title={trailer.name}
+                              frameBorder="0"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                            ></iframe>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

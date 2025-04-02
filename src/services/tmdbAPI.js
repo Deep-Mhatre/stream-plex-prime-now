@@ -1,4 +1,3 @@
-
 // TMDB API service to fetch movies and TV shows
 
 const API_KEY = "6c61a48574a84ca84082b3cc6849140"; // Your TMDB API key
@@ -112,5 +111,23 @@ export const getHeroMovie = async () => {
   } catch (error) {
     console.error("Error fetching hero movie:", error);
     return null;
+  }
+};
+
+// Get movie trailers
+export const getMovieTrailers = async (movieId) => {
+  try {
+    const response = await fetch(`${BASE_URL}/movie/${movieId}/videos`, options);
+    const data = await response.json();
+    
+    // Filter for trailers and teasers
+    const videos = data.results.filter(video => 
+      video.type === 'Trailer' || video.type === 'Teaser'
+    );
+    
+    return videos;
+  } catch (error) {
+    console.error(`Error fetching trailers for movie ID ${movieId}:`, error);
+    return [];
   }
 };

@@ -12,6 +12,7 @@ import NotFound from "./pages/NotFound";
 import MovieDetails from "./pages/MovieDetails";
 import TVShowDetails from "./pages/TVShowDetails";
 import SubscriptionPayment from "./pages/SubscriptionPayment";
+import "./services/apiProxy"; // Import the API proxy to initialize it
 
 const queryClient = new QueryClient();
 
