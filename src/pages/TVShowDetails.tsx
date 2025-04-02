@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Play, Plus, ThumbsUp } from 'lucide-react';
@@ -6,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { getTVShowDetails } from '@/services/tmdbAPI';
-import { toast } from '@/components/ui/sonner';
+import { toast } from 'sonner';
 
 const TVShowDetails = () => {
   const { id } = useParams();

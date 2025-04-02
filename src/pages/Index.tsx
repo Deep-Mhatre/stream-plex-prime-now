@@ -1,11 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import ContentRow from '@/components/ContentRow';
 import Footer from '@/components/Footer';
 import { getTrendingMovies, getFeaturedMovies, getPopularTVShows } from '@/services/tmdbAPI';
-import { toast } from '@/components/ui/sonner';
+import { toast } from 'sonner';
 
 const Index = () => {
   const [featuredMovies, setFeaturedMovies] = useState([]);

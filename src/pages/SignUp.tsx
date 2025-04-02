@@ -1,21 +1,35 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Logo from '@/components/Logo';
+import { toast } from 'sonner';
 
 const SignUp = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Sign up attempt with:', { name, email, password });
-    // TODO: Implement actual sign up logic
+    setIsLoading(true);
+    
+    // Simulate signup process
+    setTimeout(() => {
+      console.log('Sign up attempt with:', { name, email, password });
+      setIsLoading(false);
+      
+      // Simulate successful signup
+      toast.success('Account created successfully!');
+      
+      // Redirect to subscription page
+      navigate('/subscription');
+    }, 1500);
   };
 
   return (
@@ -74,7 +88,9 @@ const SignUp = () => {
           </CardContent>
           
           <CardFooter className="flex-col space-y-4">
-            <Button type="submit" className="w-full">Create Account</Button>
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? 'Creating Account...' : 'Create Account'}
+            </Button>
             <p className="text-sm text-center text-muted-foreground">
               Already have an account? <Link to="/login" className="text-primary hover:underline">Sign in</Link>
             </p>

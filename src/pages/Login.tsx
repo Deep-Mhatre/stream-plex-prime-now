@@ -1,20 +1,34 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Logo from '@/components/Logo';
+import { toast } from 'sonner';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Login attempt with:', { email, password });
-    // TODO: Implement actual authentication
+    setIsLoading(true);
+    
+    // Simulate authentication process
+    setTimeout(() => {
+      console.log('Login attempt with:', { email, password });
+      setIsLoading(false);
+      
+      // Simulate successful login
+      toast.success('Successfully logged in!');
+      
+      // Redirect to subscription page
+      navigate('/subscription');
+    }, 1500);
   };
 
   return (
@@ -62,7 +76,9 @@ const Login = () => {
           </CardContent>
           
           <CardFooter className="flex-col space-y-4">
-            <Button type="submit" className="w-full">Sign In</Button>
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? 'Signing In...' : 'Sign In'}
+            </Button>
             <p className="text-sm text-center text-muted-foreground">
               New to PLEXSTREAM? <Link to="/signup" className="text-primary hover:underline">Sign up now</Link>
             </p>
