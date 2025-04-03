@@ -1,6 +1,7 @@
+
 // TMDB API service to fetch movies and TV shows
 
-const API_KEY = "6c61a48574a84ca84082b3cc6849140"; // Your TMDB API key
+const API_KEY = "6c61a48574a84ca84082b3cc68491440"; // Your TMDB API key (fixed typo)
 const BASE_URL = "https://api.themoviedb.org/3";
 
 // Headers for fetch requests
@@ -128,6 +129,38 @@ export const getMovieTrailers = async (movieId) => {
     return videos;
   } catch (error) {
     console.error(`Error fetching trailers for movie ID ${movieId}:`, error);
+    return [];
+  }
+};
+
+// Get TV show trailers
+export const getTVShowTrailers = async (tvId) => {
+  try {
+    const response = await fetch(`${BASE_URL}/tv/${tvId}/videos`, options);
+    const data = await response.json();
+    
+    // Filter for trailers and teasers
+    const videos = data.results.filter(video => 
+      video.type === 'Trailer' || video.type === 'Teaser'
+    );
+    
+    return videos;
+  } catch (error) {
+    console.error(`Error fetching trailers for TV show ID ${tvId}:`, error);
+    return [];
+  }
+};
+
+// Get movies that might be in both TMDB and OMDB
+// This is a basic implementation, in a real app you'd have a more robust solution
+export const getMoviesOnBothPlatforms = async () => {
+  try {
+    // Get popular movies as a starting point
+    const response = await fetch(`${BASE_URL}/movie/popular?page=1`, options);
+    const data = await response.json();
+    return data.results;
+  } catch (error) {
+    console.error("Error fetching movies on both platforms:", error);
     return [];
   }
 };

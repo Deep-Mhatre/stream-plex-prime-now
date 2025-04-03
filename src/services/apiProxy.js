@@ -29,6 +29,7 @@ export const handleTrackView = async (requestData) => {
 // Intercept fetch calls to our simulated API endpoints
 const originalFetch = window.fetch;
 window.fetch = async function(url, options) {
+  // Handle our internal API endpoints
   if (url === '/api/track-view' && options?.method === 'POST') {
     const requestData = JSON.parse(options.body);
     const result = await handleTrackView(requestData);
@@ -38,6 +39,11 @@ window.fetch = async function(url, options) {
     };
   }
   
+  // Fix OMDB API URL if it's mistyped
+  if (url.includes('omdbapi.org')) {
+    url = url.replace('omdbapi.org', 'omdbapi.com');
+  }
+  
   // Pass through all other requests to the original fetch
-  return originalFetch.apply(this, arguments);
+  return originalFetch.apply(this, [url, options]);
 };

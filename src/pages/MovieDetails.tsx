@@ -1,22 +1,25 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Play, Plus, ThumbsUp } from 'lucide-react';
+import { ArrowLeft, Play, Plus, ThumbsUp, Film } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { getMovieDetails, getMovieTrailers } from '@/services/tmdbAPI';
-import { trackMovieView, trackTrailerView } from '@/services/userBehaviorService';
+import { getMovieByTitle } from '@/services/omdbAPI';
+import { trackMovieView, trackTrailerView, trackWatchMovie } from '@/services/userBehaviorService';
 import { toast } from 'sonner';
 
 const MovieDetails = () => {
   const { id } = useParams();
   const [movie, setMovie] = useState(null);
+  const [omdbMovie, setOmdbMovie] = useState(null);
   const [trailers, setTrailers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [trailerOpen, setTrailerOpen] = useState(false);
   const [selectedTrailer, setSelectedTrailer] = useState(null);
+  const [movieOpen, setMovieOpen] = useState(false);
 
   // Mock user ID - in a real app, you would get this from authentication
   const mockUserId = "user123";
@@ -33,6 +36,11 @@ const MovieDetails = () => {
         // Track that the user viewed this movie
         if (data) {
           trackMovieView(mockUserId, data.id, data.title);
+          
+          // Try to fetch the movie from OMDB using the title and year
+          const year = data.release_date ? data.release_date.substring(0, 4) : "";
+          const omdbData = await getMovieByTitle(data.title, year);
+          setOmdbMovie(omdbData);
         }
         
         // Fetch trailers
@@ -58,6 +66,18 @@ const MovieDetails = () => {
       trackTrailerView(mockUserId, movie.id, movie.title);
     }
   };
+
+  const handleWatchMovie = () => {
+    setMovieOpen(true);
+    
+    // Track that the user watched the full movie
+    if (movie) {
+      trackWatchMovie(mockUserId, movie.id, movie.title);
+    }
+  };
+
+  // Check if movie is available to watch (exists in both TMDB and OMDB)
+  const isMovieAvailable = omdbMovie && omdbMovie.imdbID;
 
   if (loading) {
     return (
@@ -159,6 +179,14 @@ const MovieDetails = () => {
                     </span>
                   </>
                 )}
+                {omdbMovie && omdbMovie.imdbRating && (
+                  <>
+                    <span className="mx-1">•</span>
+                    <span className="flex items-center gap-1">
+                      IMDb: {omdbMovie.imdbRating}
+                    </span>
+                  </>
+                )}
               </div>
               
               {movie.tagline && (
@@ -203,10 +231,42 @@ const MovieDetails = () => {
                     No Trailers Available
                   </Button>
                 )}
-                <Button variant="secondary" size="lg" className="rounded-full gap-2">
-                  <Plus className="h-5 w-5" />
-                  Add to Watchlist
-                </Button>
+                
+                {isMovieAvailable ? (
+                  <Dialog open={movieOpen} onOpenChange={setMovieOpen}>
+                    <DialogTrigger asChild>
+                      <Button 
+                        variant="secondary" 
+                        size="lg"
+                        className="rounded-full gap-2"
+                        onClick={handleWatchMovie}
+                      >
+                        <Film className="h-5 w-5" />
+                        Watch Movie
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-4xl p-0 bg-black">
+                      <div className="aspect-video w-full flex items-center justify-center bg-black p-8 text-center">
+                        <div>
+                          <h3 className="text-xl font-bold mb-4 text-white">
+                            {movie.title} is now playing
+                          </h3>
+                          <p className="text-gray-300 mb-4">
+                            This is a simulation. In a real streaming app, the movie would play here.
+                          </p>
+                          <p className="text-sm text-gray-400">
+                            IMDb ID: {omdbMovie?.imdbID}
+                          </p>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                ) : (
+                  <Button variant="secondary" size="lg" className="rounded-full gap-2">
+                    <Plus className="h-5 w-5" />
+                    Add to Watchlist
+                  </Button>
+                )}
               </div>
               
               {/* Additional info */}
@@ -222,6 +282,20 @@ const MovieDetails = () => {
                   <div>
                     <h3 className="text-sm font-semibold text-muted-foreground mb-1">Languages</h3>
                     <p>{movie.spoken_languages.map(l => l.english_name).join(', ')}</p>
+                  </div>
+                )}
+                
+                {omdbMovie && omdbMovie.Director && (
+                  <div>
+                    <h3 className="text-sm font-semibold text-muted-foreground mb-1">Director</h3>
+                    <p>{omdbMovie.Director}</p>
+                  </div>
+                )}
+                
+                {omdbMovie && omdbMovie.Actors && (
+                  <div>
+                    <h3 className="text-sm font-semibold text-muted-foreground mb-1">Cast</h3>
+                    <p>{omdbMovie.Actors}</p>
                   </div>
                 )}
               </div>

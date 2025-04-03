@@ -1,12 +1,21 @@
 
 import React, { useState, useEffect } from 'react';
-import { Play, Info } from 'lucide-react';
+import { Play, Info, Film } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Link } from 'react-router-dom';
 import { getHeroMovie } from '@/services/tmdbAPI';
+import { getMovieByTitle } from '@/services/omdbAPI';
+import { trackWatchMovie } from '@/services/userBehaviorService';
 
 const Hero = () => {
   const [heroData, setHeroData] = useState(null);
+  const [omdbMovie, setOmdbMovie] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [movieOpen, setMovieOpen] = useState(false);
+
+  // Mock user ID - in a real app, you would get this from authentication
+  const mockUserId = "user123";
 
   useEffect(() => {
     const fetchHeroMovie = async () => {
@@ -14,6 +23,13 @@ const Hero = () => {
         setLoading(true);
         const movie = await getHeroMovie();
         setHeroData(movie);
+        
+        // Try to fetch the movie from OMDB using the title and year
+        if (movie) {
+          const year = movie.releaseDate ? movie.releaseDate.substring(0, 4) : "";
+          const omdbData = await getMovieByTitle(movie.title, year);
+          setOmdbMovie(omdbData);
+        }
       } catch (error) {
         console.error("Error fetching hero movie:", error);
       } finally {
@@ -23,6 +39,18 @@ const Hero = () => {
 
     fetchHeroMovie();
   }, []);
+
+  const handleWatchMovie = () => {
+    setMovieOpen(true);
+    
+    // Track that the user watched the full movie
+    if (heroData) {
+      trackWatchMovie(mockUserId, heroData.id, heroData.title);
+    }
+  };
+
+  // Check if movie is available to watch (exists in both TMDB and OMDB)
+  const isMovieAvailable = omdbMovie && omdbMovie.imdbID;
 
   if (loading) {
     return (
@@ -69,19 +97,57 @@ const Hero = () => {
               <span>{genreText}</span>
             </>
           )}
+          {omdbMovie && omdbMovie.imdbRating && (
+            <>
+              <span>•</span>
+              <span>IMDb: {omdbMovie.imdbRating}</span>
+            </>
+          )}
         </div>
         <p className="text-base md:text-lg mb-6 max-w-2xl">
           {heroData.overview}
         </p>
         <div className="flex flex-wrap gap-4">
-          <Button size="lg" className="rounded-full gap-2">
-            <Play className="h-5 w-5" />
-            Play
-          </Button>
-          <Button variant="secondary" size="lg" className="rounded-full gap-2">
-            <Info className="h-5 w-5" />
-            More Info
-          </Button>
+          {isMovieAvailable ? (
+            <Dialog open={movieOpen} onOpenChange={setMovieOpen}>
+              <DialogTrigger asChild>
+                <Button 
+                  size="lg" 
+                  className="rounded-full gap-2"
+                  onClick={handleWatchMovie}
+                >
+                  <Play className="h-5 w-5" />
+                  Watch Now
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-4xl p-0 bg-black">
+                <div className="aspect-video w-full flex items-center justify-center bg-black p-8 text-center">
+                  <div>
+                    <h3 className="text-xl font-bold mb-4 text-white">
+                      {heroData.title} is now playing
+                    </h3>
+                    <p className="text-gray-300 mb-4">
+                      This is a simulation. In a real streaming app, the movie would play here.
+                    </p>
+                    <p className="text-sm text-gray-400">
+                      IMDb ID: {omdbMovie?.imdbID}
+                    </p>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+          ) : (
+            <Button size="lg" className="rounded-full gap-2">
+              <Play className="h-5 w-5" />
+              Play
+            </Button>
+          )}
+          <Link to={`/movie/${heroData.id}`}>
+            <Button variant="secondary" size="lg" className="rounded-full gap-2">
+              <Info className="h-5 w-5" />
+              More Info
+            </Button>
+          </Link>
         </div>
       </div>
     </div>

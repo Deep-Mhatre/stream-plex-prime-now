@@ -1,16 +1,25 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Play, Plus, ThumbsUp } from 'lucide-react';
+import { ArrowLeft, Play, Plus, ThumbsUp, Film } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { getTVShowDetails } from '@/services/tmdbAPI';
+import { getTVShowByTitle } from '@/services/omdbAPI';
+import { trackWatchTVShow } from '@/services/userBehaviorService';
 import { toast } from 'sonner';
 
 const TVShowDetails = () => {
   const { id } = useParams();
   const [show, setShow] = useState(null);
+  const [omdbShow, setOmdbShow] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showOpen, setShowOpen] = useState(false);
+
+  // Mock user ID - in a real app, you would get this from authentication
+  const mockUserId = "user123";
 
   useEffect(() => {
     const fetchTVShow = async () => {
@@ -20,6 +29,13 @@ const TVShowDetails = () => {
         setLoading(true);
         const data = await getTVShowDetails(id);
         setShow(data);
+        
+        // Try to fetch the TV show from OMDB using the title and year
+        if (data) {
+          const year = data.first_air_date ? data.first_air_date.substring(0, 4) : "";
+          const omdbData = await getTVShowByTitle(data.name, year);
+          setOmdbShow(omdbData);
+        }
       } catch (error) {
         console.error("Error fetching TV show details:", error);
         toast.error("Failed to load TV show details");
@@ -30,6 +46,18 @@ const TVShowDetails = () => {
 
     fetchTVShow();
   }, [id]);
+
+  const handleWatchShow = () => {
+    setShowOpen(true);
+    
+    // Track that the user watched the TV show
+    if (show) {
+      trackWatchTVShow(mockUserId, show.id, show.name);
+    }
+  };
+
+  // Check if show is available to watch (exists in both TMDB and OMDB)
+  const isShowAvailable = omdbShow && omdbShow.imdbID;
 
   if (loading) {
     return (
@@ -136,6 +164,14 @@ const TVShowDetails = () => {
                     </span>
                   </>
                 )}
+                {omdbShow && omdbShow.imdbRating && (
+                  <>
+                    <span className="mx-1">•</span>
+                    <span className="flex items-center gap-1">
+                      IMDb: {omdbShow.imdbRating}
+                    </span>
+                  </>
+                )}
               </div>
               
               {show.tagline && (
@@ -146,10 +182,40 @@ const TVShowDetails = () => {
               <p className="mb-6">{show.overview}</p>
               
               <div className="flex flex-wrap gap-4 mb-8">
-                <Button size="lg" className="rounded-full gap-2">
-                  <Play className="h-5 w-5" />
-                  Play
-                </Button>
+                {isShowAvailable ? (
+                  <Dialog open={showOpen} onOpenChange={setShowOpen}>
+                    <DialogTrigger asChild>
+                      <Button 
+                        size="lg" 
+                        className="rounded-full gap-2"
+                        onClick={handleWatchShow}
+                      >
+                        <Play className="h-5 w-5" />
+                        Watch Now
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-4xl p-0 bg-black">
+                      <div className="aspect-video w-full flex items-center justify-center bg-black p-8 text-center">
+                        <div>
+                          <h3 className="text-xl font-bold mb-4 text-white">
+                            {show.name} is now playing
+                          </h3>
+                          <p className="text-gray-300 mb-4">
+                            This is a simulation. In a real streaming app, the TV show would play here.
+                          </p>
+                          <p className="text-sm text-gray-400">
+                            IMDb ID: {omdbShow?.imdbID}
+                          </p>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                ) : (
+                  <Button size="lg" className="rounded-full gap-2" disabled>
+                    <Play className="h-5 w-5" />
+                    Not Available
+                  </Button>
+                )}
                 <Button variant="secondary" size="lg" className="rounded-full gap-2">
                   <Plus className="h-5 w-5" />
                   Add to Watchlist
@@ -178,7 +244,54 @@ const TVShowDetails = () => {
                     <p>{show.spoken_languages.map(l => l.english_name).join(', ')}</p>
                   </div>
                 )}
+                
+                {omdbShow && omdbShow.Writer && (
+                  <div>
+                    <h3 className="text-sm font-semibold text-muted-foreground mb-1">Writers</h3>
+                    <p>{omdbShow.Writer}</p>
+                  </div>
+                )}
+                
+                {omdbShow && omdbShow.Actors && (
+                  <div>
+                    <h3 className="text-sm font-semibold text-muted-foreground mb-1">Cast</h3>
+                    <p>{omdbShow.Actors}</p>
+                  </div>
+                )}
               </div>
+              
+              {/* Seasons section if we wanted to add that */}
+              {show.seasons && show.seasons.length > 0 && (
+                <div className="mt-8">
+                  <h2 className="text-xl font-semibold mb-4">Seasons</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {show.seasons.map((season) => (
+                      <div key={season.id} className="bg-card rounded-lg overflow-hidden shadow">
+                        <div className="aspect-[2/3] bg-secondary">
+                          {season.poster_path ? (
+                            <img 
+                              src={`https://image.tmdb.org/t/p/w300${season.poster_path}`} 
+                              alt={season.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-gray-800">
+                              <span>No Image</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="p-4">
+                          <h3 className="font-medium">{season.name}</h3>
+                          <p className="text-sm text-muted-foreground">{season.episode_count} Episodes</p>
+                          {season.air_date && (
+                            <p className="text-sm text-muted-foreground">{new Date(season.air_date).getFullYear()}</p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
