@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Play, Plus, ThumbsUp, Film } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { getMovieDetails, getMovieTrailers } from '@/services/tmdbAPI';
@@ -19,7 +19,6 @@ const MovieDetails = () => {
   const [loading, setLoading] = useState(true);
   const [trailerOpen, setTrailerOpen] = useState(false);
   const [selectedTrailer, setSelectedTrailer] = useState(null);
-  const [movieOpen, setMovieOpen] = useState(false);
 
   // Mock user ID - in a real app, you would get this from authentication
   const mockUserId = "user123";
@@ -199,7 +198,7 @@ const MovieDetails = () => {
               <p className="mb-6">{movie.overview}</p>
               
               <div className="flex flex-wrap gap-4 mb-8">
-                {trailers.length > 0 ? (
+                {trailers.length > 0 && (
                   <Dialog open={trailerOpen} onOpenChange={setTrailerOpen}>
                     <DialogTrigger asChild>
                       <Button 
@@ -229,11 +228,6 @@ const MovieDetails = () => {
                       )}
                     </DialogContent>
                   </Dialog>
-                ) : (
-                  <Button size="lg" className="rounded-full gap-2" disabled>
-                    <Play className="h-5 w-5" />
-                    No Trailers Available
-                  </Button>
                 )}
                 
                 {isMovieAvailable && (

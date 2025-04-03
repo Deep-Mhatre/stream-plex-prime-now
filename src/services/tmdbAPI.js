@@ -63,7 +63,7 @@ export const getPopularTVShows = async () => {
     }));
   } catch (error) {
     console.error("Error fetching popular TV shows:", error);
-    return [];
+    throw new Error("Failed to fetch TV shows");
   }
 };
 
