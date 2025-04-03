@@ -1,8 +1,9 @@
 
 // TMDB API service to fetch movies and TV shows
 
-const API_KEY = "6c61a48574a84ca84082b3cc68491440"; // Your TMDB API key (fixed typo)
+const API_KEY = "6c61a48574a84ca84082b3cc68491440"; // Your TMDB API key
 const BASE_URL = "https://api.themoviedb.org/3";
+const FLIXFOX_URL = "https://apk.flixfox.com.in/en-US/video/8605915232380928?from=android";
 
 // Headers for fetch requests
 const options = {
@@ -149,6 +150,11 @@ export const getTVShowTrailers = async (tvId) => {
     console.error(`Error fetching trailers for TV show ID ${tvId}:`, error);
     return [];
   }
+};
+
+// Get watch URL for movies and TV shows
+export const getWatchUrl = () => {
+  return FLIXFOX_URL;
 };
 
 // Get movies that might be in both TMDB and OMDB

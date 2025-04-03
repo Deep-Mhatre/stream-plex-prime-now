@@ -11,9 +11,11 @@ const TVShows = () => {
   const { data: tvShows, isLoading, error } = useQuery({
     queryKey: ['popularTVShows'],
     queryFn: getPopularTVShows,
-    onError: (err) => {
-      console.error("Error fetching TV shows:", err);
-      toast.error("Failed to load TV shows. Please try again later.");
+    onSettled: (data, error) => {
+      if (error) {
+        console.error("Error fetching TV shows:", error);
+        toast.error("Failed to load TV shows. Please try again later.");
+      }
     }
   });
 
