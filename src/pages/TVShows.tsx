@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Navbar from '@/components/Navbar';
 import ContentRow from '@/components/ContentRow';
@@ -11,11 +11,14 @@ const TVShows = () => {
   const { data: tvShows, isLoading, error } = useQuery({
     queryKey: ['popularTVShows'],
     queryFn: getPopularTVShows,
-    onSettled: (data, error) => {
-      if (error) {
-        console.error("Error fetching TV shows:", error);
-        toast.error("Failed to load TV shows. Please try again later.");
+    onSuccess: (data) => {
+      if (!data || data.length === 0) {
+        toast.error("No TV shows found");
       }
+    },
+    onError: (error) => {
+      console.error("Error fetching TV shows:", error);
+      toast.error("Failed to load TV shows. Please try again later.");
     }
   });
 

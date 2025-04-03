@@ -1,11 +1,12 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Check, CreditCard } from 'lucide-react';
+import { Check, CreditCard, QrCode, Smartphone, Building2 } from 'lucide-react';
 import Logo from '@/components/Logo';
 import { toast } from 'sonner';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 
 interface PlanOption {
   id: string;

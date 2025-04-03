@@ -15,9 +15,27 @@ import SubscriptionPayment from "./pages/SubscriptionPayment";
 import Movies from "./pages/Movies";
 import TVShows from "./pages/TVShows";
 import Categories from "./pages/Categories";
-import "./services/apiProxy"; // Import the API proxy to initialize it
+import Search from "./pages/Search";
+import "./services/apiProxy";
+import React from "react";
 
 const queryClient = new QueryClient();
+
+// Simple auth check - in a real app, you'd use a proper auth system
+const isAuthenticated = () => {
+  return localStorage.getItem('user') !== null;
+};
+
+interface ProtectedRouteProps {
+  children: React.ReactNode;
+}
+
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+  if (!isAuthenticated()) {
+    return <Navigate to="/login" replace />;
+  }
+  return <>{children}</>;
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -26,16 +44,80 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
-          <Route path="/plans" element={<Plans />} />
-          <Route path="/subscription" element={<SubscriptionPayment />} />
-          <Route path="/movie/:id" element={<MovieDetails />} />
-          <Route path="/tv/:id" element={<TVShowDetails />} />
-          <Route path="/movies" element={<Movies />} />
-          <Route path="/tvshows" element={<TVShows />} />
-          <Route path="/categories" element={<Categories />} />
+          <Route 
+            path="/" 
+            element={
+              <ProtectedRoute>
+                <Index />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/plans" 
+            element={
+              <ProtectedRoute>
+                <Plans />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/subscription" 
+            element={
+              <ProtectedRoute>
+                <SubscriptionPayment />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/movie/:id" 
+            element={
+              <ProtectedRoute>
+                <MovieDetails />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/tv/:id" 
+            element={
+              <ProtectedRoute>
+                <TVShowDetails />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/movies" 
+            element={
+              <ProtectedRoute>
+                <Movies />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/tvshows" 
+            element={
+              <ProtectedRoute>
+                <TVShows />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/categories" 
+            element={
+              <ProtectedRoute>
+                <Categories />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/search" 
+            element={
+              <ProtectedRoute>
+                <Search />
+              </ProtectedRoute>
+            } 
+          />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

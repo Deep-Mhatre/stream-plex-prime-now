@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -18,12 +17,11 @@ const Login = () => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulate authentication process
+    // Simple mock authentication
     setTimeout(() => {
-      console.log('Login attempt with:', { email, password });
+      localStorage.setItem('user', JSON.stringify({ email }));
       setIsLoading(false);
       
-      // Simulate successful login
       toast.success('Successfully logged in!');
       
       // Redirect to subscription page
