@@ -3,6 +3,7 @@
 
 const API_KEY = "fe53463f"; // OMDB API key
 const BASE_URL = "https://www.omdbapi.org";
+const FLIXFOX_URL = "https://apk.flixfox.com.in/en-US/video/8605915232380928?from=android";
 
 // Get movie by title and year
 export const getMovieByTitle = async (title, year = "") => {
@@ -12,6 +13,8 @@ export const getMovieByTitle = async (title, year = "") => {
     const data = await response.json();
     
     if (data.Response === "True") {
+      // Add FlixFox URL to the response
+      data.watchUrl = FLIXFOX_URL;
       return data;
     }
     return null;
@@ -29,6 +32,8 @@ export const getTVShowByTitle = async (title, year = "") => {
     const data = await response.json();
     
     if (data.Response === "True") {
+      // Add FlixFox URL to the response
+      data.watchUrl = FLIXFOX_URL;
       return data;
     }
     return null;
@@ -45,7 +50,11 @@ export const searchMovies = async (query) => {
     const data = await response.json();
     
     if (data.Response === "True") {
-      return data.Search;
+      // Add FlixFox URL to each result
+      return data.Search.map(movie => ({
+        ...movie,
+        watchUrl: FLIXFOX_URL
+      }));
     }
     return [];
   } catch (error) {
@@ -61,11 +70,20 @@ export const searchTVShows = async (query) => {
     const data = await response.json();
     
     if (data.Response === "True") {
-      return data.Search;
+      // Add FlixFox URL to each result
+      return data.Search.map(show => ({
+        ...show,
+        watchUrl: FLIXFOX_URL
+      }));
     }
     return [];
   } catch (error) {
     console.error("Error searching TV shows on OMDB:", error);
     return [];
   }
+};
+
+// Get watch URL for movies and TV shows
+export const getWatchUrl = () => {
+  return FLIXFOX_URL;
 };

@@ -3,11 +3,11 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Play, Plus, ThumbsUp, Film } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { getTVShowDetails } from '@/services/tmdbAPI';
-import { getTVShowByTitle } from '@/services/omdbAPI';
+import { getTVShowByTitle, getWatchUrl } from '@/services/omdbAPI';
 import { trackWatchTVShow } from '@/services/userBehaviorService';
 import { toast } from 'sonner';
 
@@ -20,6 +20,7 @@ const TVShowDetails = () => {
 
   // Mock user ID - in a real app, you would get this from authentication
   const mockUserId = "user123";
+  const flixFoxUrl = getWatchUrl();
 
   useEffect(() => {
     const fetchTVShow = async () => {
@@ -48,16 +49,17 @@ const TVShowDetails = () => {
   }, [id]);
 
   const handleWatchShow = () => {
-    setShowOpen(true);
-    
     // Track that the user watched the TV show
     if (show) {
       trackWatchTVShow(mockUserId, show.id, show.name);
     }
+    
+    // Redirect to FlixFox
+    window.open(flixFoxUrl, '_blank');
   };
 
-  // Check if show is available to watch (exists in both TMDB and OMDB)
-  const isShowAvailable = omdbShow && omdbShow.imdbID;
+  // Check if show is available to watch
+  const isShowAvailable = true; // We're assuming all shows are available via FlixFox
 
   if (loading) {
     return (
@@ -183,33 +185,14 @@ const TVShowDetails = () => {
               
               <div className="flex flex-wrap gap-4 mb-8">
                 {isShowAvailable ? (
-                  <Dialog open={showOpen} onOpenChange={setShowOpen}>
-                    <DialogTrigger asChild>
-                      <Button 
-                        size="lg" 
-                        className="rounded-full gap-2"
-                        onClick={handleWatchShow}
-                      >
-                        <Play className="h-5 w-5" />
-                        Watch Now
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-4xl p-0 bg-black">
-                      <div className="aspect-video w-full flex items-center justify-center bg-black p-8 text-center">
-                        <div>
-                          <h3 className="text-xl font-bold mb-4 text-white">
-                            {show.name} is now playing
-                          </h3>
-                          <p className="text-gray-300 mb-4">
-                            This is a simulation. In a real streaming app, the TV show would play here.
-                          </p>
-                          <p className="text-sm text-gray-400">
-                            IMDb ID: {omdbShow?.imdbID}
-                          </p>
-                        </div>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
+                  <Button 
+                    size="lg" 
+                    className="rounded-full gap-2"
+                    onClick={handleWatchShow}
+                  >
+                    <Play className="h-5 w-5" />
+                    Watch Now
+                  </Button>
                 ) : (
                   <Button size="lg" className="rounded-full gap-2" disabled>
                     <Play className="h-5 w-5" />

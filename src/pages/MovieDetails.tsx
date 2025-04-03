@@ -3,11 +3,11 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Play, Plus, ThumbsUp, Film } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { getMovieDetails, getMovieTrailers } from '@/services/tmdbAPI';
-import { getMovieByTitle } from '@/services/omdbAPI';
+import { getMovieByTitle, getWatchUrl } from '@/services/omdbAPI';
 import { trackMovieView, trackTrailerView, trackWatchMovie } from '@/services/userBehaviorService';
 import { toast } from 'sonner';
 
@@ -23,6 +23,7 @@ const MovieDetails = () => {
 
   // Mock user ID - in a real app, you would get this from authentication
   const mockUserId = "user123";
+  const flixFoxUrl = getWatchUrl();
 
   useEffect(() => {
     const fetchMovie = async () => {
@@ -68,16 +69,17 @@ const MovieDetails = () => {
   };
 
   const handleWatchMovie = () => {
-    setMovieOpen(true);
-    
     // Track that the user watched the full movie
     if (movie) {
       trackWatchMovie(mockUserId, movie.id, movie.title);
     }
+    
+    // Redirect to FlixFox
+    window.open(flixFoxUrl, '_blank');
   };
 
-  // Check if movie is available to watch (exists in both TMDB and OMDB)
-  const isMovieAvailable = omdbMovie && omdbMovie.imdbID;
+  // Check if movie is available to watch
+  const isMovieAvailable = true; // We're assuming all movies are available via FlixFox
 
   if (loading) {
     return (
@@ -210,6 +212,8 @@ const MovieDetails = () => {
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="max-w-4xl p-0 bg-black">
+                      <DialogTitle className="sr-only">Trailer for {movie.title}</DialogTitle>
+                      <DialogDescription className="sr-only">Watch the trailer for {movie.title}</DialogDescription>
                       {selectedTrailer && (
                         <div className="aspect-video w-full">
                           <iframe
@@ -232,39 +236,15 @@ const MovieDetails = () => {
                   </Button>
                 )}
                 
-                {isMovieAvailable ? (
-                  <Dialog open={movieOpen} onOpenChange={setMovieOpen}>
-                    <DialogTrigger asChild>
-                      <Button 
-                        variant="secondary" 
-                        size="lg"
-                        className="rounded-full gap-2"
-                        onClick={handleWatchMovie}
-                      >
-                        <Film className="h-5 w-5" />
-                        Watch Movie
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-4xl p-0 bg-black">
-                      <div className="aspect-video w-full flex items-center justify-center bg-black p-8 text-center">
-                        <div>
-                          <h3 className="text-xl font-bold mb-4 text-white">
-                            {movie.title} is now playing
-                          </h3>
-                          <p className="text-gray-300 mb-4">
-                            This is a simulation. In a real streaming app, the movie would play here.
-                          </p>
-                          <p className="text-sm text-gray-400">
-                            IMDb ID: {omdbMovie?.imdbID}
-                          </p>
-                        </div>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                ) : (
-                  <Button variant="secondary" size="lg" className="rounded-full gap-2">
-                    <Plus className="h-5 w-5" />
-                    Add to Watchlist
+                {isMovieAvailable && (
+                  <Button 
+                    variant="secondary" 
+                    size="lg"
+                    className="rounded-full gap-2"
+                    onClick={handleWatchMovie}
+                  >
+                    <Film className="h-5 w-5" />
+                    Watch Movie
                   </Button>
                 )}
               </div>
@@ -326,6 +306,8 @@ const MovieDetails = () => {
                           </div>
                         </DialogTrigger>
                         <DialogContent className="max-w-4xl p-0 bg-black">
+                          <DialogTitle className="sr-only">Trailer: {trailer.name}</DialogTitle>
+                          <DialogDescription className="sr-only">Watch the trailer for {movie.title}</DialogDescription>
                           <div className="aspect-video w-full">
                             <iframe
                               width="100%"
