@@ -16,6 +16,8 @@ import Movies from "./pages/Movies";
 import TVShows from "./pages/TVShows";
 import Categories from "./pages/Categories";
 import Search from "./pages/Search";
+import ArchiveMovies from "./pages/ArchiveMovies";
+import ArchiveMovieDetails from "./pages/ArchiveMovieDetails";
 import "./services/apiProxy";
 import React from "react";
 
@@ -115,6 +117,22 @@ const App = () => (
             element={
               <ProtectedRoute>
                 <Search />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/archive" 
+            element={
+              <ProtectedRoute>
+                <ArchiveMovies />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/archive/:id" 
+            element={
+              <ProtectedRoute>
+                <ArchiveMovieDetails />
               </ProtectedRoute>
             } 
           />
