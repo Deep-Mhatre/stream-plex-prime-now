@@ -3,25 +3,28 @@ import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import ContentRow from '@/components/ContentRow';
 import Footer from '@/components/Footer';
-import { getFeaturedMovies, getTrendingMovies } from '@/services/tmdbAPI';
+import { getFeaturedMovies, getTrendingMovies, getTopRatedMovies } from '@/services/tmdbAPI';
 import { toast } from 'sonner';
 
 const Movies = () => {
   const [featuredMovies, setFeaturedMovies] = useState([]);
   const [trendingMovies, setTrendingMovies] = useState([]);
+  const [topMovies, setTopMovies] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [featured, trending] = await Promise.all([
+        const [featured, trending, topRated] = await Promise.all([
           getFeaturedMovies(),
-          getTrendingMovies()
+          getTrendingMovies(),
+          getTopRatedMovies()
         ]);
         
         setFeaturedMovies(featured);
         setTrendingMovies(trending);
+        setTopMovies(topRated);
       } catch (error) {
         console.error("Error fetching movies:", error);
         toast.error("Failed to load movies. Please try again later.");
@@ -56,6 +59,12 @@ const Movies = () => {
               <ContentRow 
                 title="Trending Now" 
                 items={trendingMovies} 
+                type="movie"
+              />
+              
+              <ContentRow 
+                title="Top 10 Movies" 
+                items={topMovies} 
                 type="movie"
               />
             </>

@@ -6,7 +6,6 @@ import ContentRow from '@/components/ContentRow';
 import Footer from '@/components/Footer';
 import { Input } from '@/components/ui/input';
 import { searchMoviesAndShows } from '@/services/tmdbAPI';
-import { toast } from 'sonner';
 
 const Search = () => {
   const [searchQuery, setSearchQuery] = useState('');

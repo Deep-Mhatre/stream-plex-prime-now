@@ -48,6 +48,24 @@ export const getFeaturedMovies = async () => {
   }
 };
 
+// Get top rated movies (top 10)
+export const getTopRatedMovies = async () => {
+  try {
+    const response = await fetch(`${BASE_URL}/movie/top_rated`, options);
+    const data = await response.json();
+    return data.results.slice(0, 10).map(movie => ({
+      id: movie.id,
+      title: movie.title,
+      posterPath: movie.poster_path,
+      year: movie.release_date ? movie.release_date.substring(0, 4) : "",
+      type: "movie"
+    }));
+  } catch (error) {
+    console.error("Error fetching top rated movies:", error);
+    return [];
+  }
+};
+
 // Get popular TV shows
 export const getPopularTVShows = async () => {
   try {
@@ -62,7 +80,25 @@ export const getPopularTVShows = async () => {
     }));
   } catch (error) {
     console.error("Error fetching popular TV shows:", error);
-    throw new Error("Failed to fetch TV shows");
+    return [];
+  }
+};
+
+// Get top rated TV shows (top 10)
+export const getTopRatedTVShows = async () => {
+  try {
+    const response = await fetch(`${BASE_URL}/tv/top_rated`, options);
+    const data = await response.json();
+    return data.results.slice(0, 10).map(show => ({
+      id: show.id,
+      title: show.name,
+      posterPath: show.poster_path,
+      year: show.first_air_date ? show.first_air_date.substring(0, 4) : "",
+      type: "tv"
+    }));
+  } catch (error) {
+    console.error("Error fetching top rated TV shows:", error);
+    return [];
   }
 };
 
