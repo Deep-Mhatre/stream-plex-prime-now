@@ -26,15 +26,6 @@ export const handleTrackView = async (requestData) => {
   });
 };
 
-// Handle redirecting to FlixFox
-export const handleFlixFoxRedirect = (contentId, contentTitle) => {
-  // In a real backend, this might log the redirect before sending the user to FlixFox
-  console.log(`Redirecting user to FlixFox for content: ${contentId} - ${contentTitle}`);
-  
-  // Return the FlixFox URL
-  return "https://apk.flixfox.com.in/en-US/video/8605915232380928?from=android";
-};
-
 // Intercept fetch calls to our simulated API endpoints
 const originalFetch = window.fetch;
 window.fetch = async function(url, options) {
@@ -46,20 +37,6 @@ window.fetch = async function(url, options) {
       ok: true,
       json: async () => result
     };
-  }
-  
-  if (url === '/api/flixfox-redirect' && options?.method === 'POST') {
-    const requestData = JSON.parse(options.body);
-    const redirectUrl = handleFlixFoxRedirect(requestData.contentId, requestData.contentTitle);
-    return {
-      ok: true,
-      json: async () => ({ redirectUrl })
-    };
-  }
-  
-  // Fix OMDB API URL if it's mistyped
-  if (url.includes('omdbapi.org')) {
-    url = url.replace('omdbapi.org', 'omdbapi.com');
   }
   
   // Pass through all other requests to the original fetch

@@ -1,18 +1,18 @@
 
 import React, { useState, useEffect } from 'react';
-import { Play, Info, Film } from 'lucide-react';
+import { Play, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Link } from 'react-router-dom';
-import { getHeroMovie } from '@/services/tmdbAPI';
-import { getMovieByTitle } from '@/services/omdbAPI';
-import { trackWatchMovie } from '@/services/userBehaviorService';
+import { getHeroMovie, getMovieTrailers } from '@/services/tmdbAPI';
+import { trackTrailerView } from '@/services/userBehaviorService';
 
 const Hero = () => {
   const [heroData, setHeroData] = useState(null);
-  const [omdbMovie, setOmdbMovie] = useState(null);
+  const [trailers, setTrailers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [movieOpen, setMovieOpen] = useState(false);
+  const [trailerOpen, setTrailerOpen] = useState(false);
+  const [selectedTrailer, setSelectedTrailer] = useState(null);
 
   // Mock user ID - in a real app, you would get this from authentication
   const mockUserId = "user123";
@@ -24,11 +24,10 @@ const Hero = () => {
         const movie = await getHeroMovie();
         setHeroData(movie);
         
-        // Try to fetch the movie from OMDB using the title and year
+        // Fetch trailers
         if (movie) {
-          const year = movie.releaseDate ? movie.releaseDate.substring(0, 4) : "";
-          const omdbData = await getMovieByTitle(movie.title, year);
-          setOmdbMovie(omdbData);
+          const trailerData = await getMovieTrailers(movie.id);
+          setTrailers(trailerData);
         }
       } catch (error) {
         console.error("Error fetching hero movie:", error);
@@ -40,17 +39,17 @@ const Hero = () => {
     fetchHeroMovie();
   }, []);
 
-  const handleWatchMovie = () => {
-    setMovieOpen(true);
-    
-    // Track that the user watched the full movie
-    if (heroData) {
-      trackWatchMovie(mockUserId, heroData.id, heroData.title);
+  const handlePlayTrailer = () => {
+    if (trailers.length > 0) {
+      setSelectedTrailer(trailers[0]);
+      setTrailerOpen(true);
+      
+      // Track that the user watched a trailer
+      if (heroData) {
+        trackTrailerView(mockUserId, heroData.id, heroData.title);
+      }
     }
   };
-
-  // Check if movie is available to watch (exists in both TMDB and OMDB)
-  const isMovieAvailable = omdbMovie && omdbMovie.imdbID;
 
   if (loading) {
     return (
@@ -97,49 +96,43 @@ const Hero = () => {
               <span>{genreText}</span>
             </>
           )}
-          {omdbMovie && omdbMovie.imdbRating && (
-            <>
-              <span>•</span>
-              <span>IMDb: {omdbMovie.imdbRating}</span>
-            </>
-          )}
         </div>
         <p className="text-base md:text-lg mb-6 max-w-2xl">
           {heroData.overview}
         </p>
         <div className="flex flex-wrap gap-4">
-          {isMovieAvailable ? (
-            <Dialog open={movieOpen} onOpenChange={setMovieOpen}>
+          {trailers.length > 0 ? (
+            <Dialog open={trailerOpen} onOpenChange={setTrailerOpen}>
               <DialogTrigger asChild>
                 <Button 
                   size="lg" 
                   className="rounded-full gap-2"
-                  onClick={handleWatchMovie}
+                  onClick={handlePlayTrailer}
                 >
                   <Play className="h-5 w-5" />
-                  Watch Now
+                  Watch Trailer
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-4xl p-0 bg-black">
-                <div className="aspect-video w-full flex items-center justify-center bg-black p-8 text-center">
-                  <div>
-                    <h3 className="text-xl font-bold mb-4 text-white">
-                      {heroData.title} is now playing
-                    </h3>
-                    <p className="text-gray-300 mb-4">
-                      This is a simulation. In a real streaming app, the movie would play here.
-                    </p>
-                    <p className="text-sm text-gray-400">
-                      IMDb ID: {omdbMovie?.imdbID}
-                    </p>
+                {selectedTrailer && (
+                  <div className="aspect-video w-full">
+                    <iframe
+                      width="100%"
+                      height="100%"
+                      src={`https://www.youtube.com/embed/${selectedTrailer.key}?autoplay=1`}
+                      title={selectedTrailer.name}
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    ></iframe>
                   </div>
-                </div>
+                )}
               </DialogContent>
             </Dialog>
           ) : (
-            <Button size="lg" className="rounded-full gap-2">
+            <Button size="lg" className="rounded-full gap-2" disabled>
               <Play className="h-5 w-5" />
-              Play
+              No Trailer Available
             </Button>
           )}
           <Link to={`/movie/${heroData.id}`}>

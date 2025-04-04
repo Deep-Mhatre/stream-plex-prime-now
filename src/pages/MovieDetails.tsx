@@ -1,20 +1,18 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Play, Plus, ThumbsUp, Film } from 'lucide-react';
+import { ArrowLeft, Play, ThumbsUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { getMovieDetails, getMovieTrailers } from '@/services/tmdbAPI';
-import { getMovieByTitle, getWatchUrl } from '@/services/omdbAPI';
-import { trackMovieView, trackTrailerView, trackWatchMovie } from '@/services/userBehaviorService';
+import { trackMovieView, trackTrailerView } from '@/services/userBehaviorService';
 import { toast } from 'sonner';
 
 const MovieDetails = () => {
   const { id } = useParams();
   const [movie, setMovie] = useState(null);
-  const [omdbMovie, setOmdbMovie] = useState(null);
   const [trailers, setTrailers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [trailerOpen, setTrailerOpen] = useState(false);
@@ -22,7 +20,6 @@ const MovieDetails = () => {
 
   // Mock user ID - in a real app, you would get this from authentication
   const mockUserId = "user123";
-  const flixFoxUrl = getWatchUrl();
 
   useEffect(() => {
     const fetchMovie = async () => {
@@ -36,11 +33,6 @@ const MovieDetails = () => {
         // Track that the user viewed this movie
         if (data) {
           trackMovieView(mockUserId, data.id, data.title);
-          
-          // Try to fetch the movie from OMDB using the title and year
-          const year = data.release_date ? data.release_date.substring(0, 4) : "";
-          const omdbData = await getMovieByTitle(data.title, year);
-          setOmdbMovie(omdbData);
         }
         
         // Fetch trailers
@@ -66,19 +58,6 @@ const MovieDetails = () => {
       trackTrailerView(mockUserId, movie.id, movie.title);
     }
   };
-
-  const handleWatchMovie = () => {
-    // Track that the user watched the full movie
-    if (movie) {
-      trackWatchMovie(mockUserId, movie.id, movie.title);
-    }
-    
-    // Redirect to FlixFox
-    window.open(flixFoxUrl, '_blank');
-  };
-
-  // Check if movie is available to watch
-  const isMovieAvailable = true; // We're assuming all movies are available via FlixFox
 
   if (loading) {
     return (
@@ -180,14 +159,6 @@ const MovieDetails = () => {
                     </span>
                   </>
                 )}
-                {omdbMovie && omdbMovie.imdbRating && (
-                  <>
-                    <span className="mx-1">•</span>
-                    <span className="flex items-center gap-1">
-                      IMDb: {omdbMovie.imdbRating}
-                    </span>
-                  </>
-                )}
               </div>
               
               {movie.tagline && (
@@ -229,18 +200,6 @@ const MovieDetails = () => {
                     </DialogContent>
                   </Dialog>
                 )}
-                
-                {isMovieAvailable && (
-                  <Button 
-                    variant="secondary" 
-                    size="lg"
-                    className="rounded-full gap-2"
-                    onClick={handleWatchMovie}
-                  >
-                    <Film className="h-5 w-5" />
-                    Watch Movie
-                  </Button>
-                )}
               </div>
               
               {/* Additional info */}
@@ -256,20 +215,6 @@ const MovieDetails = () => {
                   <div>
                     <h3 className="text-sm font-semibold text-muted-foreground mb-1">Languages</h3>
                     <p>{movie.spoken_languages.map(l => l.english_name).join(', ')}</p>
-                  </div>
-                )}
-                
-                {omdbMovie && omdbMovie.Director && (
-                  <div>
-                    <h3 className="text-sm font-semibold text-muted-foreground mb-1">Director</h3>
-                    <p>{omdbMovie.Director}</p>
-                  </div>
-                )}
-                
-                {omdbMovie && omdbMovie.Actors && (
-                  <div>
-                    <h3 className="text-sm font-semibold text-muted-foreground mb-1">Cast</h3>
-                    <p>{omdbMovie.Actors}</p>
                   </div>
                 )}
               </div>

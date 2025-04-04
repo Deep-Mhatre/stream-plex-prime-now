@@ -31,6 +31,9 @@ const Search = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full"
             />
+            <p className="text-sm text-muted-foreground mt-2">
+              Search for your favorite movies and TV shows to watch their trailers
+            </p>
           </div>
           
           {isLoading ? (

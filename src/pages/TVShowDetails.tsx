@@ -1,20 +1,18 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Play, Plus, ThumbsUp, Film } from 'lucide-react';
+import { ArrowLeft, Play, ThumbsUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { getTVShowDetails, getTVShowTrailers } from '@/services/tmdbAPI';
-import { getTVShowByTitle, getWatchUrl } from '@/services/omdbAPI';
-import { trackWatchTVShow } from '@/services/userBehaviorService';
+import { trackTrailerView } from '@/services/userBehaviorService';
 import { toast } from 'sonner';
 
 const TVShowDetails = () => {
   const { id } = useParams();
   const [show, setShow] = useState(null);
-  const [omdbShow, setOmdbShow] = useState(null);
   const [trailers, setTrailers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [trailerOpen, setTrailerOpen] = useState(false);
@@ -22,7 +20,6 @@ const TVShowDetails = () => {
 
   // Mock user ID - in a real app, you would get this from authentication
   const mockUserId = "user123";
-  const flixFoxUrl = getWatchUrl();
 
   useEffect(() => {
     const fetchTVShow = async () => {
@@ -33,12 +30,7 @@ const TVShowDetails = () => {
         const data = await getTVShowDetails(id);
         setShow(data);
         
-        // Try to fetch the TV show from OMDB using the title and year
         if (data) {
-          const year = data.first_air_date ? data.first_air_date.substring(0, 4) : "";
-          const omdbData = await getTVShowByTitle(data.name, year);
-          setOmdbShow(omdbData);
-          
           // Fetch trailers
           const trailerData = await getTVShowTrailers(id);
           setTrailers(trailerData);
@@ -57,20 +49,12 @@ const TVShowDetails = () => {
   const handlePlayTrailer = (trailer) => {
     setSelectedTrailer(trailer);
     setTrailerOpen(true);
-  };
-
-  const handleWatchShow = () => {
-    // Track that the user watched the TV show
-    if (show) {
-      trackWatchTVShow(mockUserId, show.id, show.name);
-    }
     
-    // Redirect to FlixFox
-    window.open(flixFoxUrl, '_blank');
+    // Track that the user watched a trailer
+    if (show) {
+      trackTrailerView(mockUserId, show.id, show.name);
+    }
   };
-
-  // Check if show is available to watch
-  const isShowAvailable = true; // We're assuming all shows are available via FlixFox
 
   if (loading) {
     return (
@@ -177,14 +161,6 @@ const TVShowDetails = () => {
                     </span>
                   </>
                 )}
-                {omdbShow && omdbShow.imdbRating && (
-                  <>
-                    <span className="mx-1">•</span>
-                    <span className="flex items-center gap-1">
-                      IMDb: {omdbShow.imdbRating}
-                    </span>
-                  </>
-                )}
               </div>
               
               {show.tagline && (
@@ -226,26 +202,6 @@ const TVShowDetails = () => {
                     </DialogContent>
                   </Dialog>
                 )}
-                
-                {isShowAvailable ? (
-                  <Button 
-                    size="lg" 
-                    className="rounded-full gap-2"
-                    onClick={handleWatchShow}
-                  >
-                    <Play className="h-5 w-5" />
-                    Watch Now
-                  </Button>
-                ) : (
-                  <Button size="lg" className="rounded-full gap-2" disabled>
-                    <Play className="h-5 w-5" />
-                    Not Available
-                  </Button>
-                )}
-                <Button variant="secondary" size="lg" className="rounded-full gap-2">
-                  <Plus className="h-5 w-5" />
-                  Add to Watchlist
-                </Button>
               </div>
               
               {/* Additional info */}
@@ -268,20 +224,6 @@ const TVShowDetails = () => {
                   <div>
                     <h3 className="text-sm font-semibold text-muted-foreground mb-1">Languages</h3>
                     <p>{show.spoken_languages.map(l => l.english_name).join(', ')}</p>
-                  </div>
-                )}
-                
-                {omdbShow && omdbShow.Writer && (
-                  <div>
-                    <h3 className="text-sm font-semibold text-muted-foreground mb-1">Writers</h3>
-                    <p>{omdbShow.Writer}</p>
-                  </div>
-                )}
-                
-                {omdbShow && omdbShow.Actors && (
-                  <div>
-                    <h3 className="text-sm font-semibold text-muted-foreground mb-1">Cast</h3>
-                    <p>{omdbShow.Actors}</p>
                   </div>
                 )}
               </div>

@@ -1,8 +1,8 @@
+
 // TMDB API service to fetch movies and TV shows
 
 const API_KEY = "6c61a48574a84ca84082b3cc68491440";
 const BASE_URL = "https://api.themoviedb.org/3";
-const FLIXFOX_URL = "https://apk.flixfox.com.in/en-US/video/8605915232380928?from=android";
 
 const options = {
   method: "GET",
@@ -146,25 +146,6 @@ export const getTVShowTrailers = async (tvId) => {
     return videos;
   } catch (error) {
     console.error(`Error fetching trailers for TV show ID ${tvId}:`, error);
-    return [];
-  }
-};
-
-// Get watch URL for movies and TV shows
-export const getWatchUrl = () => {
-  return FLIXFOX_URL;
-};
-
-// Get movies that might be in both TMDB and OMDB
-// This is a basic implementation, in a real app you'd have a more robust solution
-export const getMoviesOnBothPlatforms = async () => {
-  try {
-    // Get popular movies as a starting point
-    const response = await fetch(`${BASE_URL}/movie/popular?page=1`, options);
-    const data = await response.json();
-    return data.results;
-  } catch (error) {
-    console.error("Error fetching movies on both platforms:", error);
     return [];
   }
 };
