@@ -59,12 +59,12 @@ const TVShows = () => {
             <>
               <ContentRow 
                 title="Popular TV Shows" 
-                items={popularTVShows ?? []} 
+                items={popularTVShows || []} 
                 type="tv"
               />
               <ContentRow 
                 title="Top Rated TV Shows" 
-                items={topRatedTVShows ?? []} 
+                items={topRatedTVShows || []} 
                 type="tv"
               />
             </>
