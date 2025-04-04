@@ -1,21 +1,37 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Navbar from '@/components/Navbar';
 import ContentRow from '@/components/ContentRow';
 import Footer from '@/components/Footer';
-import { getPopularTVShows } from '@/services/tmdbAPI';
+import { getPopularTVShows, getTopRatedTVShows } from '@/services/tmdbAPI';
 import { toast } from 'sonner';
 
 const TVShows = () => {
-  const { data: tvShows, isLoading, error } = useQuery({
+  const { data: popularTVShows, isLoading: popularLoading, error: popularError } = useQuery({
     queryKey: ['popularTVShows'],
     queryFn: getPopularTVShows,
-    onError: (error) => {
-      console.error("Error fetching TV shows:", error);
-      toast.error("Failed to load TV shows. Please try again later.");
+    meta: {
+      onError: (error) => {
+        console.error("Error fetching popular TV shows:", error);
+        toast.error("Failed to load popular TV shows. Please try again later.");
+      }
     }
   });
+
+  const { data: topRatedTVShows, isLoading: topRatedLoading, error: topRatedError } = useQuery({
+    queryKey: ['topRatedTVShows'],
+    queryFn: getTopRatedTVShows,
+    meta: {
+      onError: (error) => {
+        console.error("Error fetching top rated TV shows:", error);
+        toast.error("Failed to load top rated TV shows. Please try again later.");
+      }
+    }
+  });
+
+  const isLoading = popularLoading || topRatedLoading;
+  const hasError = popularError || topRatedError;
 
   return (
     <div className="min-h-screen bg-background">
@@ -29,7 +45,7 @@ const TVShows = () => {
             <div className="container px-4 mx-auto py-20 flex justify-center">
               <div className="animate-pulse text-xl">Loading TV shows...</div>
             </div>
-          ) : error ? (
+          ) : hasError ? (
             <div className="text-center py-10">
               <p className="text-lg text-red-500">Failed to load TV shows</p>
               <button 
@@ -40,11 +56,18 @@ const TVShows = () => {
               </button>
             </div>
           ) : (
-            <ContentRow 
-              title="Popular TV Shows" 
-              items={tvShows || []} 
-              type="tv"
-            />
+            <>
+              <ContentRow 
+                title="Popular TV Shows" 
+                items={popularTVShows || []} 
+                type="tv"
+              />
+              <ContentRow 
+                title="Top Rated TV Shows" 
+                items={topRatedTVShows || []} 
+                type="tv"
+              />
+            </>
           )}
         </div>
       </main>

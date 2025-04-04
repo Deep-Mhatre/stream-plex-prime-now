@@ -1,5 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import ContentRow from '@/components/ContentRow';
@@ -14,40 +15,66 @@ import {
 import { toast } from 'sonner';
 
 const Index = () => {
-  const [featuredMovies, setFeaturedMovies] = useState([]);
-  const [trendingMovies, setTrendingMovies] = useState([]);
-  const [tvShows, setTvShows] = useState([]);
-  const [topMovies, setTopMovies] = useState([]);
-  const [topTVShows, setTopTVShows] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const [featured, trending, shows, topRatedMovies, topRatedShows] = await Promise.all([
-          getFeaturedMovies(),
-          getTrendingMovies(),
-          getPopularTVShows(),
-          getTopRatedMovies(),
-          getTopRatedTVShows()
-        ]);
-        
-        setFeaturedMovies(featured);
-        setTrendingMovies(trending);
-        setTvShows(shows);
-        setTopMovies(topRatedMovies);
-        setTopTVShows(topRatedShows);
-      } catch (error) {
-        console.error("Error fetching content:", error);
-        toast.error("Failed to load content. Please try again later.");
-      } finally {
-        setLoading(false);
+  const { data: featuredMovies, isLoading: featuredLoading, error: featuredError } = useQuery({
+    queryKey: ['featuredMovies'],
+    queryFn: getFeaturedMovies,
+    meta: {
+      onError: (error) => {
+        console.error("Error fetching featured movies:", error);
+        toast.error("Failed to load featured movies.");
       }
-    };
-    
-    fetchData();
-  }, []);
+    }
+  });
+
+  const { data: trendingMovies, isLoading: trendingLoading, error: trendingError } = useQuery({
+    queryKey: ['trendingMovies'],
+    queryFn: getTrendingMovies,
+    meta: {
+      onError: (error) => {
+        console.error("Error fetching trending movies:", error);
+        toast.error("Failed to load trending movies.");
+      }
+    }
+  });
+
+  const { data: popularTVShows, isLoading: tvShowsLoading, error: tvShowsError } = useQuery({
+    queryKey: ['popularTVShows'],
+    queryFn: getPopularTVShows,
+    meta: {
+      onError: (error) => {
+        console.error("Error fetching TV shows:", error);
+        toast.error("Failed to load TV shows.");
+      }
+    }
+  });
+
+  const { data: topRatedMovies, isLoading: topMoviesLoading, error: topMoviesError } = useQuery({
+    queryKey: ['topRatedMovies'],
+    queryFn: getTopRatedMovies,
+    meta: {
+      onError: (error) => {
+        console.error("Error fetching top rated movies:", error);
+        toast.error("Failed to load top rated movies.");
+      }
+    }
+  });
+
+  const { data: topRatedTVShows, isLoading: topTVShowsLoading, error: topTVShowsError } = useQuery({
+    queryKey: ['topRatedTVShows'],
+    queryFn: getTopRatedTVShows,
+    meta: {
+      onError: (error) => {
+        console.error("Error fetching top rated TV shows:", error);
+        toast.error("Failed to load top rated TV shows.");
+      }
+    }
+  });
+
+  const isLoading = featuredLoading || trendingLoading || tvShowsLoading || 
+                    topMoviesLoading || topTVShowsLoading;
+  
+  const hasError = featuredError || trendingError || tvShowsError || 
+                  topMoviesError || topTVShowsError;
 
   return (
     <div className="min-h-screen bg-background">
@@ -56,43 +83,53 @@ const Index = () => {
       <main className="pt-16">
         <Hero />
         
-        {loading ? (
+        {isLoading ? (
           <div className="container px-4 mx-auto py-20 flex justify-center">
             <div className="animate-pulse text-xl">Loading content...</div>
+          </div>
+        ) : hasError ? (
+          <div className="text-center py-10">
+            <p className="text-lg text-red-500">Failed to load some content</p>
+            <button 
+              className="mt-4 px-4 py-2 bg-primary text-white rounded-md"
+              onClick={() => window.location.reload()}
+            >
+              Try Again
+            </button>
           </div>
         ) : (
           <>
             <ContentRow 
               title="Featured Movies" 
-              items={featuredMovies} 
+              items={featuredMovies || []} 
               type="movie"
               slug="movies/featured"
             />
             
             <ContentRow 
               title="Trending Movies" 
-              items={trendingMovies} 
+              items={trendingMovies || []} 
               type="movie"
               slug="movies/trending"
             />
             
             <ContentRow 
               title="Top 10 Movies" 
-              items={topMovies} 
+              items={topRatedMovies || []} 
               type="movie"
               slug="movies/top-rated"
             />
             
             <ContentRow 
               title="Popular TV Shows" 
-              items={tvShows} 
+              items={popularTVShows || []} 
               type="tv"
               slug="tvshows/popular"
             />
             
             <ContentRow 
               title="Top 10 TV Shows" 
-              items={topTVShows} 
+              items={topRatedTVShows || []} 
               type="tv"
               slug="tvshows/top-rated"
             />

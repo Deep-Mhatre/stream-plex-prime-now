@@ -6,14 +6,21 @@ import ContentRow from '@/components/ContentRow';
 import Footer from '@/components/Footer';
 import { Input } from '@/components/ui/input';
 import { searchMoviesAndShows } from '@/services/tmdbAPI';
+import { toast } from 'sonner';
 
 const Search = () => {
   const [searchQuery, setSearchQuery] = useState('');
   
-  const { data: searchResults, isLoading } = useQuery({
+  const { data: searchResults, isLoading, error } = useQuery({
     queryKey: ['search', searchQuery],
     queryFn: () => searchMoviesAndShows(searchQuery),
     enabled: searchQuery.length > 2,
+    meta: {
+      onError: (error) => {
+        console.error("Error searching:", error);
+        toast.error("Failed to search. Please try again later.");
+      }
+    }
   });
 
   return (
@@ -39,13 +46,23 @@ const Search = () => {
             <div className="flex justify-center py-20">
               <div className="animate-pulse text-xl">Searching...</div>
             </div>
+          ) : error ? (
+            <div className="text-center py-10">
+              <p className="text-lg text-red-500">Failed to search</p>
+              <button 
+                className="mt-4 px-4 py-2 bg-primary text-white rounded-md"
+                onClick={() => window.location.reload()}
+              >
+                Try Again
+              </button>
+            </div>
           ) : searchResults?.length > 0 ? (
             <ContentRow 
               title="Search Results" 
               items={searchResults}
             />
           ) : searchQuery.length > 2 && (
-            <p className="text-center text-muted-foreground">
+            <p className="text-center text-muted-foreground py-10">
               No results found for "{searchQuery}"
             </p>
           )}
