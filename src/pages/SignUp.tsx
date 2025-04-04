@@ -19,9 +19,36 @@ const SignUp = () => {
     e.preventDefault();
     setIsLoading(true);
     
+    // Get initials for avatar
+    const initials = name.split(' ').map(n => n[0]).join('').toUpperCase();
+    
     // Simulate signup process
     setTimeout(() => {
-      console.log('Sign up attempt with:', { name, email, password });
+      // Store rich user data
+      localStorage.setItem('user', JSON.stringify({
+        name,
+        email,
+        initials,
+        avatar: null, // No custom avatar yet
+        watchlist: [],
+        createdAt: new Date().toISOString(),
+        lastLogin: new Date().toISOString()
+      }));
+      
+      // Track signup in MongoDB
+      fetch('/api/track-auth', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: email,
+          action: 'signup',
+          name: name,
+          timestamp: new Date().toISOString(),
+        }),
+      }).catch(err => console.error('Error tracking signup:', err));
+      
       setIsLoading(false);
       
       // Simulate successful signup

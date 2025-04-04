@@ -70,19 +70,19 @@ const Movies = () => {
             <>
               <ContentRow 
                 title="Featured Movies" 
-                items={featuredMovies || []} 
+                items={featuredMovies ?? []} 
                 type="movie"
               />
               
               <ContentRow 
                 title="Trending Now" 
-                items={trendingMovies || []} 
+                items={trendingMovies ?? []} 
                 type="movie"
               />
               
               <ContentRow 
                 title="Top 10 Movies" 
-                items={topRatedMovies || []} 
+                items={topRatedMovies ?? []} 
                 type="movie"
               />
             </>

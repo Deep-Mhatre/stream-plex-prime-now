@@ -101,35 +101,35 @@ const Index = () => {
           <>
             <ContentRow 
               title="Featured Movies" 
-              items={featuredMovies || []} 
+              items={featuredMovies ?? []} 
               type="movie"
               slug="movies/featured"
             />
             
             <ContentRow 
               title="Trending Movies" 
-              items={trendingMovies || []} 
+              items={trendingMovies ?? []} 
               type="movie"
               slug="movies/trending"
             />
             
             <ContentRow 
               title="Top 10 Movies" 
-              items={topRatedMovies || []} 
+              items={topRatedMovies ?? []} 
               type="movie"
               slug="movies/top-rated"
             />
             
             <ContentRow 
               title="Popular TV Shows" 
-              items={popularTVShows || []} 
+              items={popularTVShows ?? []} 
               type="tv"
               slug="tvshows/popular"
             />
             
             <ContentRow 
               title="Top 10 TV Shows" 
-              items={topRatedTVShows || []} 
+              items={topRatedTVShows ?? []} 
               type="tv"
               slug="tvshows/top-rated"
             />

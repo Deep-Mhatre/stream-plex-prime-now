@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -17,10 +18,35 @@ const Login = () => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simple mock authentication
+    // Get initials for avatar
+    const initials = email.charAt(0).toUpperCase();
+    
+    // Mock authentication with more user data
     setTimeout(() => {
-      localStorage.setItem('user', JSON.stringify({ email }));
+      // Store more comprehensive user data
+      localStorage.setItem('user', JSON.stringify({ 
+        email,
+        initials,
+        name: email.split('@')[0], // Simple name extraction
+        avatar: null, // No custom avatar yet
+        watchlist: [],
+        lastLogin: new Date().toISOString()
+      }));
+      
       setIsLoading(false);
+      
+      // Track login in MongoDB
+      fetch('/api/track-auth', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: email,
+          action: 'login',
+          timestamp: new Date().toISOString(),
+        }),
+      }).catch(err => console.error('Error tracking login:', err));
       
       toast.success('Successfully logged in!');
       
