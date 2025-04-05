@@ -5,7 +5,8 @@
 export const searchArchiveMovies = async (query = "", page = 1) => {
   try {
     // Base query to get movies from the "moviesandfilms" collection
-    const baseQuery = "mediatype:(movies)";
+    // Adding format:mp4 to ensure we get videos that can be played
+    const baseQuery = "mediatype:(movies) AND format:(mp4 OR h.264)";
     const fullQuery = query ? `${baseQuery} AND (${query})` : baseQuery;
     const rows = 24; // Number of results per page
     
@@ -79,4 +80,10 @@ export const getArchiveMovieDetails = async (identifier) => {
     console.error(`Error fetching details for movie ${identifier}:`, error);
     return null;
   }
+};
+
+// New function to get direct playable movie URLs
+export const getPlayableMovieUrl = (movieId, videoPath) => {
+  if (!movieId || !videoPath) return null;
+  return `https://archive.org/download/${movieId}/${videoPath}`;
 };
