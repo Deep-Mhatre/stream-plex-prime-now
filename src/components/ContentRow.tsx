@@ -17,6 +17,9 @@ interface ContentRowProps {
 }
 
 const ContentRow: React.FC<ContentRowProps> = ({ title, items, type = 'movie', slug }) => {
+  // Ensure items is always an array, even if it's null, undefined or an empty object
+  const safeItems = Array.isArray(items) ? items : [];
+  
   return (
     <section className="py-6">
       <div className="container px-4 mx-auto">
@@ -33,7 +36,7 @@ const ContentRow: React.FC<ContentRowProps> = ({ title, items, type = 'movie', s
         </div>
         
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-          {items.map(item => (
+          {safeItems.map(item => (
             <MovieCard
               key={item.id}
               id={item.id}
