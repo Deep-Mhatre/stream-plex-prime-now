@@ -5,7 +5,11 @@ import Navbar from '@/components/Navbar';
 import ContentRow from '@/components/ContentRow';
 import Footer from '@/components/Footer';
 import { getFeaturedMovies, getTrendingMovies, getTopRatedMovies } from '@/services/tmdbAPI';
+import { searchArchiveMovies } from '@/services/archiveAPI';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Archive } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Movies = () => {
   const { data: featuredMovies, isLoading: featuredLoading, error: featuredError } = useQuery({
@@ -41,7 +45,18 @@ const Movies = () => {
     }
   });
 
-  const isLoading = featuredLoading || trendingLoading || topRatedLoading;
+  const { data: archiveMovies, isLoading: archiveLoading } = useQuery({
+    queryKey: ['archiveMovies'],
+    queryFn: () => searchArchiveMovies("", 1),
+    meta: {
+      onError: (error) => {
+        console.error("Error fetching archive movies:", error);
+        toast.error("Failed to load archive movies. Please try again later.");
+      }
+    }
+  });
+
+  const isLoading = featuredLoading || trendingLoading || topRatedLoading || archiveLoading;
   const hasError = featuredError || trendingError || topRatedError;
 
   return (
@@ -85,6 +100,61 @@ const Movies = () => {
                 items={Array.isArray(topRatedMovies) ? topRatedMovies : []} 
                 type="movie"
               />
+              
+              <section className="py-6">
+                <div className="container px-4 mx-auto">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-xl font-semibold">Public Domain Movies</h2>
+                    <Link 
+                      to="/archive" 
+                      className="flex items-center text-sm text-primary hover:underline"
+                    >
+                      View All Archives
+                    </Link>
+                  </div>
+                  
+                  {Array.isArray(archiveMovies) && archiveMovies.length > 0 ? (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                      {archiveMovies.slice(0, 6).map(movie => (
+                        <Link 
+                          key={movie.id}
+                          to={`/archive/${movie.id}`}
+                          className="block relative rounded-md overflow-hidden aspect-[2/3] bg-secondary"
+                        >
+                          {movie.thumbnailUrl ? (
+                            <img 
+                              src={movie.thumbnailUrl} 
+                              alt={movie.title} 
+                              className="w-full h-full object-cover"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <div className="flex items-center justify-center h-full bg-secondary">
+                              <Archive className="h-16 w-16 text-muted-foreground" />
+                            </div>
+                          )}
+                          <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/80 to-transparent">
+                            <h3 className="text-sm font-medium line-clamp-1 text-white">{movie.title}</h3>
+                            <p className="text-xs text-gray-300">{movie.year}</p>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-10">
+                      <p className="text-lg text-muted-foreground">Explore our collection of free public domain movies</p>
+                      <Button 
+                        variant="outline"
+                        onClick={() => window.location.href = "/archive"}
+                        className="mt-4"
+                      >
+                        <Archive className="mr-2 h-4 w-4" />
+                        Browse Archive
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </section>
             </>
           )}
         </div>
