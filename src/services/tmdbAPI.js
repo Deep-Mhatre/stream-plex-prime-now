@@ -1,4 +1,3 @@
-
 // TMDB API service to fetch movies and TV shows
 
 const API_KEY = "6c61a48574a84ca84082b3cc68491440";
@@ -208,6 +207,37 @@ export const searchMoviesAndShows = async (query) => {
       }));
   } catch (error) {
     console.error("Error searching:", error);
+    return [];
+  }
+};
+
+// Get movies by genre
+export const getMoviesByGenre = async (genreSlug) => {
+  try {
+    // Import the genre mapping from the lib folder
+    const { genreIdMapping } = await import('../lib/genres');
+    const genreId = genreIdMapping[genreSlug];
+    
+    if (!genreId) {
+      console.error(`No matching genre ID found for slug: ${genreSlug}`);
+      return [];
+    }
+    
+    const response = await fetch(
+      `${BASE_URL}/discover/movie?with_genres=${genreId}&sort_by=popularity.desc`,
+      options
+    );
+    const data = await response.json();
+    
+    return data.results.map(movie => ({
+      id: movie.id,
+      title: movie.title,
+      posterPath: movie.poster_path,
+      year: movie.release_date ? movie.release_date.substring(0, 4) : "",
+      type: "movie"
+    }));
+  } catch (error) {
+    console.error(`Error fetching movies for genre ${genreSlug}:`, error);
     return [];
   }
 };

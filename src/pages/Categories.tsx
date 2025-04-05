@@ -4,6 +4,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Film, Tv, Award, Clock, Star, Heart, Users, Globe, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { Toggle } from '@/components/ui/toggle';
 
 const categories = [
   { name: "Action", icon: <Zap className="h-5 w-5" />, slug: "action" },

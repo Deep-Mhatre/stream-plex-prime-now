@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,6 +14,7 @@ import SubscriptionPayment from "./pages/SubscriptionPayment";
 import Movies from "./pages/Movies";
 import TVShows from "./pages/TVShows";
 import Categories from "./pages/Categories";
+import GenrePage from "./pages/GenrePage";
 import Search from "./pages/Search";
 import ArchiveMovies from "./pages/ArchiveMovies";
 import ArchiveMovieDetails from "./pages/ArchiveMovieDetails";
@@ -109,6 +109,14 @@ const App = () => (
             element={
               <ProtectedRoute>
                 <Categories />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/genre/:genreSlug" 
+            element={
+              <ProtectedRoute>
+                <GenrePage />
               </ProtectedRoute>
             } 
           />
