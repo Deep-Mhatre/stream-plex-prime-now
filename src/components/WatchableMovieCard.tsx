@@ -25,7 +25,7 @@ const WatchableMovieCard: React.FC<WatchableMovieCardProps> = ({
 
   const handleWatchClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    // Open a modal with embedded video player instead of redirecting
+    // Open a new window with a more reliable Google Drive embed format
     const videoWindow = window.open('', '_blank');
     
     if (videoWindow) {
@@ -36,11 +36,22 @@ const WatchableMovieCard: React.FC<WatchableMovieCardProps> = ({
           <title>Watch ${title}</title>
           <style>
             body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
+            .video-container { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
             iframe { width: 100%; height: 100%; border: none; }
           </style>
         </head>
         <body>
-          <iframe src="${watchLink}" allowfullscreen></iframe>
+          <div class="video-container">
+            <iframe 
+              src="${watchLink}" 
+              frameborder="0" 
+              width="100%" 
+              height="100%" 
+              allowfullscreen="true" 
+              mozallowfullscreen="true" 
+              webkitallowfullscreen="true">
+            </iframe>
+          </div>
         </body>
         </html>
       `);

@@ -1,4 +1,3 @@
-
 // Movie-related TMDB API services
 
 import { BASE_URL, options } from './config';
@@ -160,17 +159,17 @@ export const getBestMoviesOfAllTime = async () => {
     464052  // Wonder Woman 1984
   ];
 
-  // Direct video file links for each movie
+  // Direct video file links for each movie - use the embed URL format
   const directVideoLinks = {
-    299534: "https://drive.google.com/file/d/1TdGi8PzgUZ1RNFw5NnNr2MnqVeIVN4SK/preview", // Avengers: Endgame
-    299536: "https://drive.google.com/file/d/1fcKRBIYJ2HE2uCN2N8KGJzhgtvC0LdZH/preview", // Avengers: Infinity War
-    284054: "https://drive.google.com/file/d/1CYE6ArOpKtsFJIlXa0ivCGfQH5XiLsvs/preview", // Black Panther
-    532459: "https://drive.google.com/file/d/1KsSn9FeXUXLuiQJRfcXxVdg8bGK8GDEs/preview", // Parmanu
-    610201: "https://drive.google.com/file/d/1nINviDRCZQF3J8ekXB0JCwQvODYzgKEX/preview", // Dil Bechara
-    1023094: "https://drive.google.com/file/d/1LWl9f3CrTngisG0vtI6LQHc22oAcmwDj/preview", // Kalki
-    634649: "https://drive.google.com/file/d/1P5ZrCGvS2Kb28jA3m2l3ERuaj4xDWJID/preview", // Spider-Man: No Way Home
-    361743: "https://drive.google.com/file/d/1efSDF3lqIb0y4L7IJwpelC-w7Er9SXWF/preview", // Top Gun: Maverick
-    464052: "https://drive.google.com/file/d/1Flc70JE-HaW-oROhzUahZLlFn3wmoKEA/preview"  // Wonder Woman 1984
+    299534: "https://drive.google.com/file/d/1TdGi8PzgUZ1RNFw5NnNr2MnqVeIVN4SK/preview?usp=sharing", // Avengers: Endgame
+    299536: "https://drive.google.com/file/d/1fcKRBIYJ2HE2uCN2N8KGJzhgtvC0LdZH/preview?usp=sharing", // Avengers: Infinity War
+    284054: "https://drive.google.com/file/d/1CYE6ArOpKtsFJIlXa0ivCGfQH5XiLsvs/preview?usp=sharing", // Black Panther
+    532459: "https://drive.google.com/file/d/1KsSn9FeXUXLuiQJRfcXxVdg8bGK8GDEs/preview?usp=sharing", // Parmanu
+    610201: "https://drive.google.com/file/d/1nINviDRCZQF3J8ekXB0JCwQvODYzgKEX/preview?usp=sharing", // Dil Bechara
+    1023094: "https://drive.google.com/file/d/1LWl9f3CrTngisG0vtI6LQHc22oAcmwDj/preview?usp=sharing", // Kalki
+    634649: "https://drive.google.com/file/d/1P5ZrCGvS2Kb28jA3m2l3ERuaj4xDWJID/preview?usp=sharing", // Spider-Man: No Way Home
+    361743: "https://drive.google.com/file/d/1efSDF3lqIb0y4L7IJwpelC-w7Er9SXWF/preview?usp=sharing", // Top Gun: Maverick
+    464052: "https://drive.google.com/file/d/1Flc70JE-HaW-oROhzUahZLlFn3wmoKEA/preview?usp=sharing"  // Wonder Woman 1984
   };
 
   try {
