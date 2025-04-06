@@ -25,7 +25,27 @@ const WatchableMovieCard: React.FC<WatchableMovieCardProps> = ({
 
   const handleWatchClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    window.open(watchLink, '_blank');
+    // Open a modal with embedded video player instead of redirecting
+    const videoWindow = window.open('', '_blank');
+    
+    if (videoWindow) {
+      videoWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Watch ${title}</title>
+          <style>
+            body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
+            iframe { width: 100%; height: 100%; border: none; }
+          </style>
+        </head>
+        <body>
+          <iframe src="${watchLink}" allowfullscreen></iframe>
+        </body>
+        </html>
+      `);
+      videoWindow.document.close();
+    }
   };
 
   return (

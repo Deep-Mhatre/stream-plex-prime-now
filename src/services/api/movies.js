@@ -1,3 +1,4 @@
+
 // Movie-related TMDB API services
 
 import { BASE_URL, options } from './config';
@@ -159,17 +160,17 @@ export const getBestMoviesOfAllTime = async () => {
     464052  // Wonder Woman 1984
   ];
 
-  // Google Drive links for each movie
-  const driveLinks = {
-    299534: "https://drive.google.com/drive/folders/13TEAQdFWe-kvSUDxi9-M0S_E2k5c3H-L?usp=drive_link", // Avengers: Endgame
-    299536: "https://drive.google.com/drive/folders/13TEAQdFWe-kvSUDxi9-M0S_E2k5c3H-L?usp=drive_link", // Avengers: Infinity War
-    284054: "https://drive.google.com/drive/folders/13TEAQdFWe-kvSUDxi9-M0S_E2k5c3H-L?usp=drive_link", // Black Panther
-    532459: "https://drive.google.com/drive/folders/13TEAQdFWe-kvSUDxi9-M0S_E2k5c3H-L?usp=drive_link", // Parmanu
-    610201: "https://drive.google.com/drive/folders/13TEAQdFWe-kvSUDxi9-M0S_E2k5c3H-L?usp=drive_link", // Dil Bechara
-    1023094: "https://drive.google.com/drive/folders/13TEAQdFWe-kvSUDxi9-M0S_E2k5c3H-L?usp=drive_link", // Kalki
-    634649: "https://drive.google.com/drive/folders/13TEAQdFWe-kvSUDxi9-M0S_E2k5c3H-L?usp=drive_link", // Spider-Man: No Way Home
-    361743: "https://drive.google.com/drive/folders/13TEAQdFWe-kvSUDxi9-M0S_E2k5c3H-L?usp=drive_link", // Top Gun: Maverick
-    464052: "https://drive.google.com/drive/folders/13TEAQdFWe-kvSUDxi9-M0S_E2k5c3H-L?usp=drive_link"  // Wonder Woman 1984
+  // Direct video file links for each movie
+  const directVideoLinks = {
+    299534: "https://drive.google.com/file/d/1TdGi8PzgUZ1RNFw5NnNr2MnqVeIVN4SK/preview", // Avengers: Endgame
+    299536: "https://drive.google.com/file/d/1fcKRBIYJ2HE2uCN2N8KGJzhgtvC0LdZH/preview", // Avengers: Infinity War
+    284054: "https://drive.google.com/file/d/1CYE6ArOpKtsFJIlXa0ivCGfQH5XiLsvs/preview", // Black Panther
+    532459: "https://drive.google.com/file/d/1KsSn9FeXUXLuiQJRfcXxVdg8bGK8GDEs/preview", // Parmanu
+    610201: "https://drive.google.com/file/d/1nINviDRCZQF3J8ekXB0JCwQvODYzgKEX/preview", // Dil Bechara
+    1023094: "https://drive.google.com/file/d/1LWl9f3CrTngisG0vtI6LQHc22oAcmwDj/preview", // Kalki
+    634649: "https://drive.google.com/file/d/1P5ZrCGvS2Kb28jA3m2l3ERuaj4xDWJID/preview", // Spider-Man: No Way Home
+    361743: "https://drive.google.com/file/d/1efSDF3lqIb0y4L7IJwpelC-w7Er9SXWF/preview", // Top Gun: Maverick
+    464052: "https://drive.google.com/file/d/1Flc70JE-HaW-oROhzUahZLlFn3wmoKEA/preview"  // Wonder Woman 1984
   };
 
   try {
@@ -183,7 +184,7 @@ export const getBestMoviesOfAllTime = async () => {
           posterPath: movie.poster_path,
           year: movie.release_date ? movie.release_date.substring(0, 4) : "",
           type: "movie",
-          watchLink: driveLinks[movie.id] // Add the Google Drive link
+          watchLink: directVideoLinks[movie.id] // Add the direct video file link
         }))
     );
     
