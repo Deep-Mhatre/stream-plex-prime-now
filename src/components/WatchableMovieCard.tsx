@@ -25,7 +25,7 @@ const WatchableMovieCard: React.FC<WatchableMovieCardProps> = ({
 
   const handleWatchClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    // Open a new window with a more reliable Google Drive embed format
+    // Open a new window with an optimized Google Drive embed
     const videoWindow = window.open('', '_blank');
     
     if (videoWindow) {
