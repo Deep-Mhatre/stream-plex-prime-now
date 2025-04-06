@@ -4,13 +4,15 @@ import { useQuery } from '@tanstack/react-query';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import ContentRow from '@/components/ContentRow';
+import WatchableContentRow from '@/components/WatchableContentRow';
 import Footer from '@/components/Footer';
 import { 
   getTrendingMovies, 
   getFeaturedMovies, 
   getPopularTVShows, 
   getTopRatedMovies,
-  getTopRatedTVShows
+  getTopRatedTVShows,
+  getBestMoviesOfAllTime
 } from '@/services/tmdbAPI';
 import { toast } from 'sonner';
 
@@ -70,11 +72,22 @@ const Index = () => {
     }
   });
 
+  const { data: bestMovies, isLoading: bestMoviesLoading, error: bestMoviesError } = useQuery({
+    queryKey: ['bestMovies'],
+    queryFn: getBestMoviesOfAllTime,
+    meta: {
+      onError: (error) => {
+        console.error("Error fetching best movies of all time:", error);
+        toast.error("Failed to load best movies of all time.");
+      }
+    }
+  });
+
   const isLoading = featuredLoading || trendingLoading || tvShowsLoading || 
-                    topMoviesLoading || topTVShowsLoading;
+                    topMoviesLoading || topTVShowsLoading || bestMoviesLoading;
   
   const hasError = featuredError || trendingError || tvShowsError || 
-                  topMoviesError || topTVShowsError;
+                  topMoviesError || topTVShowsError || bestMoviesError;
 
   return (
     <div className="min-h-screen bg-background">
@@ -99,6 +112,12 @@ const Index = () => {
           </div>
         ) : (
           <>
+            <WatchableContentRow 
+              title="Best Movies of All Time" 
+              items={Array.isArray(bestMovies) ? bestMovies : []} 
+              slug="movies/best"
+            />
+          
             <ContentRow 
               title="Featured Movies" 
               items={Array.isArray(featuredMovies) ? featuredMovies : []} 

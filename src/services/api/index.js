@@ -9,7 +9,8 @@ export {
   getMovieDetails,
   getHeroMovie,
   getMovieTrailers,
-  getMoviesByGenre
+  getMoviesByGenre,
+  getBestMoviesOfAllTime
 } from './movies';
 
 // TV Shows

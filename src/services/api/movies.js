@@ -1,4 +1,3 @@
-
 // Movie-related TMDB API services
 
 import { BASE_URL, options } from './config';
@@ -138,6 +137,60 @@ export const getMoviesByGenre = async (genreSlug) => {
     }));
   } catch (error) {
     console.error(`Error fetching movies for genre ${genreSlug}:`, error);
+    return [];
+  }
+};
+
+// Get best movies of all time (custom selection)
+export const getBestMoviesOfAllTime = async () => {
+  // These are the specific movie IDs we want to fetch
+  // 1. Avengers Endgame, 2. Avengers Infinity War, 3. Black Panther, 
+  // 4. Parmanu, 5. Dil Bechara, 6. Kalki 2898AD, 7. Spider-Man: No Way Home, 
+  // 8. Top Gun: Maverick, 9. Wonder Woman 1984
+  const movieIds = [
+    299534, // Avengers: Endgame
+    299536, // Avengers: Infinity War
+    284054, // Black Panther
+    532459, // Parmanu: The Story of Pokhran
+    610201, // Dil Bechara
+    1023094, // Kalki 2898 AD
+    634649, // Spider-Man: No Way Home
+    361743, // Top Gun: Maverick
+    464052  // Wonder Woman 1984
+  ];
+
+  // Google Drive links for each movie
+  const driveLinks = {
+    299534: "https://drive.google.com/drive/folders/13TEAQdFWe-kvSUDxi9-M0S_E2k5c3H-L?usp=drive_link", // Avengers: Endgame
+    299536: "https://drive.google.com/drive/folders/13TEAQdFWe-kvSUDxi9-M0S_E2k5c3H-L?usp=drive_link", // Avengers: Infinity War
+    284054: "https://drive.google.com/drive/folders/13TEAQdFWe-kvSUDxi9-M0S_E2k5c3H-L?usp=drive_link", // Black Panther
+    532459: "https://drive.google.com/drive/folders/13TEAQdFWe-kvSUDxi9-M0S_E2k5c3H-L?usp=drive_link", // Parmanu
+    610201: "https://drive.google.com/drive/folders/13TEAQdFWe-kvSUDxi9-M0S_E2k5c3H-L?usp=drive_link", // Dil Bechara
+    1023094: "https://drive.google.com/drive/folders/13TEAQdFWe-kvSUDxi9-M0S_E2k5c3H-L?usp=drive_link", // Kalki
+    634649: "https://drive.google.com/drive/folders/13TEAQdFWe-kvSUDxi9-M0S_E2k5c3H-L?usp=drive_link", // Spider-Man: No Way Home
+    361743: "https://drive.google.com/drive/folders/13TEAQdFWe-kvSUDxi9-M0S_E2k5c3H-L?usp=drive_link", // Top Gun: Maverick
+    464052: "https://drive.google.com/drive/folders/13TEAQdFWe-kvSUDxi9-M0S_E2k5c3H-L?usp=drive_link"  // Wonder Woman 1984
+  };
+
+  try {
+    // We'll fetch each movie separately and combine them
+    const moviesPromises = movieIds.map(id => 
+      fetch(`${BASE_URL}/movie/${id}`, options)
+        .then(response => response.json())
+        .then(movie => ({
+          id: movie.id,
+          title: movie.title,
+          posterPath: movie.poster_path,
+          year: movie.release_date ? movie.release_date.substring(0, 4) : "",
+          type: "movie",
+          watchLink: driveLinks[movie.id] // Add the Google Drive link
+        }))
+    );
+    
+    const movies = await Promise.all(moviesPromises);
+    return movies;
+  } catch (error) {
+    console.error("Error fetching best movies of all time:", error);
     return [];
   }
 };
