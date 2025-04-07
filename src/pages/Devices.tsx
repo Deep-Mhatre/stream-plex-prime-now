@@ -2,7 +2,7 @@
 import React from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { Tv, Smartphone, Laptop, Tablet, GameController, Cast } from 'lucide-react';
+import { Tv, Smartphone, Laptop, Tablet, Gamepad, Cast } from 'lucide-react';
 
 interface DeviceCardProps {
   icon: React.ReactNode;
@@ -55,7 +55,7 @@ const Devices = () => {
             />
             
             <DeviceCard 
-              icon={<GameController size={32} className="text-primary" />}
+              icon={<Gamepad size={32} className="text-primary" />}
               title="Game Consoles"
               description="PS5, PS4, Xbox Series X|S, Xbox One"
             />
