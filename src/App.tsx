@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,6 +19,15 @@ import GenrePage from "./pages/GenrePage";
 import Search from "./pages/Search";
 import ArchiveMovies from "./pages/ArchiveMovies";
 import ArchiveMovieDetails from "./pages/ArchiveMovieDetails";
+import About from "./pages/About";
+import Jobs from "./pages/Jobs";
+import Contact from "./pages/Contact";
+import FAQ from "./pages/FAQ";
+import Devices from "./pages/Devices";
+import HelpCenter from "./pages/HelpCenter";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
+import Cookies from "./pages/Cookies";
 import "./services/apiProxy";
 import React from "react";
 
@@ -144,6 +154,18 @@ const App = () => (
               </ProtectedRoute>
             } 
           />
+          
+          {/* Footer page routes */}
+          <Route path="/about" element={<About />} />
+          <Route path="/jobs" element={<Jobs />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/faq" element={<FAQ />} />
+          <Route path="/devices" element={<Devices />} />
+          <Route path="/help" element={<HelpCenter />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/cookies" element={<Cookies />} />
+          
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
