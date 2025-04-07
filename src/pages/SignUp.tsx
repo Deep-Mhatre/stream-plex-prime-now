@@ -55,7 +55,7 @@ const SignUp = () => {
       toast.success('Account created successfully!');
       
       // Redirect to subscription page
-      navigate('/subscription');
+      navigate('/plans');
     }, 1500);
   };
 

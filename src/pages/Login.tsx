@@ -50,8 +50,8 @@ const Login = () => {
       
       toast.success('Successfully logged in!');
       
-      // Redirect to subscription page
-      navigate('/subscription');
+      // Redirect to home page after login
+      navigate('/');
     }, 1500);
   };
 

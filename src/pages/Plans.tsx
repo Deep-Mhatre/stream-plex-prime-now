@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Check } from 'lucide-react';
@@ -44,10 +44,12 @@ const Plans = () => {
   ];
 
   const [selectedPlan, setSelectedPlan] = useState('standard');
+  const navigate = useNavigate();
 
   const handleContinue = () => {
     console.log(`Selected plan: ${selectedPlan}`);
-    // TODO: Implement payment processing
+    // Navigate to subscription payment page
+    navigate('/subscription');
   };
 
   return (
