@@ -48,8 +48,8 @@ const Plans = () => {
 
   const handleContinue = () => {
     console.log(`Selected plan: ${selectedPlan}`);
-    // Navigate to subscription payment page
-    navigate('/subscription');
+    // Navigate to subscription payment page with selected plan
+    navigate(`/subscription?plan=${selectedPlan}`);
   };
 
   return (
