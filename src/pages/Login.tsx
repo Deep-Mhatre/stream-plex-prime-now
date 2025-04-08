@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Logo from '@/components/Logo';
 import { toast } from 'sonner';
+import { loginUser } from '@/services/userService';
+import { trackNavigation } from '@/services/userService';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -14,45 +16,28 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Get initials for avatar
-    const initials = email.charAt(0).toUpperCase();
-    
-    // Mock authentication with more user data
-    setTimeout(() => {
-      // Store more comprehensive user data
-      localStorage.setItem('user', JSON.stringify({ 
-        email,
-        initials,
-        name: email.split('@')[0], // Simple name extraction
-        avatar: null, // No custom avatar yet
-        watchlist: [],
-        lastLogin: new Date().toISOString()
-      }));
+    try {
+      const result = await loginUser(email, password);
       
+      if (result.success) {
+        // Track login event
+        await trackNavigation(email, 'login');
+        
+        toast.success('Successfully logged in!');
+        navigate('/');
+      } else {
+        toast.error(result.error || 'Invalid email or password');
+      }
+    } catch (error) {
+      console.error('Error during login:', error);
+      toast.error('An unexpected error occurred');
+    } finally {
       setIsLoading(false);
-      
-      // Track login in MongoDB
-      fetch('/api/track-auth', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: email,
-          action: 'login',
-          timestamp: new Date().toISOString(),
-        }),
-      }).catch(err => console.error('Error tracking login:', err));
-      
-      toast.success('Successfully logged in!');
-      
-      // Redirect to home page after login
-      navigate('/');
-    }, 1500);
+    }
   };
 
   return (

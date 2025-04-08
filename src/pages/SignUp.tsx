@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Logo from '@/components/Logo';
 import { toast } from 'sonner';
+import { createUser } from '@/services/userService';
 
 const SignUp = () => {
   const [name, setName] = useState('');
@@ -15,48 +16,25 @@ const SignUp = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Get initials for avatar
-    const initials = name.split(' ').map(n => n[0]).join('').toUpperCase();
-    
-    // Simulate signup process
-    setTimeout(() => {
-      // Store rich user data
-      localStorage.setItem('user', JSON.stringify({
-        name,
-        email,
-        initials,
-        avatar: null, // No custom avatar yet
-        watchlist: [],
-        createdAt: new Date().toISOString(),
-        lastLogin: new Date().toISOString()
-      }));
+    try {
+      const result = await createUser(name, email, password);
       
-      // Track signup in MongoDB
-      fetch('/api/track-auth', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: email,
-          action: 'signup',
-          name: name,
-          timestamp: new Date().toISOString(),
-        }),
-      }).catch(err => console.error('Error tracking signup:', err));
-      
+      if (result.success) {
+        toast.success('Account created successfully!');
+        navigate('/plans');
+      } else {
+        toast.error(result.error || 'Failed to create account');
+      }
+    } catch (error) {
+      console.error('Error during signup:', error);
+      toast.error('An unexpected error occurred');
+    } finally {
       setIsLoading(false);
-      
-      // Simulate successful signup
-      toast.success('Account created successfully!');
-      
-      // Redirect to subscription page
-      navigate('/plans');
-    }, 1500);
+    }
   };
 
   return (

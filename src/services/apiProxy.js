@@ -1,65 +1,61 @@
 
-// Simple API proxy to handle requests that would normally go to a backend
+// API proxy service with MongoDB integration
+import { insertDocument } from './mongoDBClient';
 
-// MongoDB connection info - in a real app, this would be in a backend environment file
-const MONGODB_URI = "mongodb+srv://mhatredeep27:esSRaC9F8CRx8l9b@cluster0.j1cfvr3.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+// Collections
+const USER_VIEWS_COLLECTION = 'user_views';
+const USER_AUTH_COLLECTION = 'user_auth';
+const USER_WATCHLIST_COLLECTION = 'watchlist';
 
-// Mock handler for the track-view endpoint
+// Handle track-view endpoint
 export const handleTrackView = async (requestData) => {
   console.log('Tracking user behavior:', requestData);
   
-  // In a real app, this would connect to MongoDB and store the data
-  // For now, we'll simulate a successful response
-  
-  // Log that we would save to MongoDB with the provided connection string
-  console.log(`Would save to MongoDB at: ${MONGODB_URI}`);
-  console.log('User:', requestData.userId);
-  console.log('Content:', requestData.contentId, requestData.contentTitle);
-  console.log('Action:', requestData.action);
-  console.log('Timestamp:', requestData.timestamp);
-  
-  // Simulate a successful response after a short delay
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve({ success: true });
-    }, 300);
-  });
+  try {
+    await insertDocument(USER_VIEWS_COLLECTION, {
+      ...requestData,
+      recordedAt: new Date().toISOString()
+    });
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Error tracking view:', error);
+    return { success: false, error: error.message };
+  }
 };
 
-// Mock handler for the track-auth endpoint (new)
+// Handle track-auth endpoint
 export const handleTrackAuth = async (requestData) => {
   console.log('Tracking auth event:', requestData);
   
-  // Log that we would save to MongoDB with the provided connection string
-  console.log(`Would save to MongoDB at: ${MONGODB_URI}`);
-  console.log('User:', requestData.userId);
-  console.log('Action:', requestData.action);
-  console.log('Timestamp:', requestData.timestamp);
-  
-  // Simulate a successful response after a short delay
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve({ success: true });
-    }, 300);
-  });
+  try {
+    await insertDocument(USER_AUTH_COLLECTION, {
+      ...requestData,
+      recordedAt: new Date().toISOString()
+    });
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Error tracking auth:', error);
+    return { success: false, error: error.message };
+  }
 };
 
-// Mock handler for the user-watchlist endpoint (new)
+// Handle user-watchlist endpoint
 export const handleWatchlistUpdate = async (requestData) => {
   console.log('Updating user watchlist:', requestData);
   
-  // Log that we would save to MongoDB with the provided connection string
-  console.log(`Would save to MongoDB at: ${MONGODB_URI}`);
-  console.log('User:', requestData.userId);
-  console.log('Action:', requestData.action);
-  console.log('Content:', requestData.contentId, requestData.contentTitle);
-  
-  // Simulate a successful response after a short delay
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve({ success: true });
-    }, 300);
-  });
+  try {
+    await insertDocument(USER_WATCHLIST_COLLECTION, {
+      ...requestData,
+      recordedAt: new Date().toISOString()
+    });
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Error updating watchlist:', error);
+    return { success: false, error: error.message };
+  }
 };
 
 // Intercept fetch calls to our simulated API endpoints

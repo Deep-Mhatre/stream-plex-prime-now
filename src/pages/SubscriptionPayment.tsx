@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
+import { recordPayment } from '@/services/paymentService';
 import {
   Dialog,
   DialogContent,
@@ -109,7 +110,7 @@ const SubscriptionPayment = () => {
     setCvv(value.substring(0, 3));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!cardNumber || !cardName || !expiry || !cvv) {
@@ -119,23 +120,89 @@ const SubscriptionPayment = () => {
     
     setProcessing(true);
     
-    // Simulate payment processing
-    setTimeout(() => {
+    try {
+      // Get current user from localStorage
+      const userDataStr = localStorage.getItem('user');
+      if (!userDataStr) {
+        toast.error('User session expired. Please log in again.');
+        navigate('/login');
+        return;
+      }
+      
+      const userData = JSON.parse(userDataStr);
+      const selectedPlanDetails = plans.find(p => p.id === selectedPlan) || plans[1];
+      
+      // Record payment in MongoDB
+      const paymentResult = await recordPayment({
+        userId: userData.email,
+        planId: selectedPlan,
+        planName: selectedPlanDetails.name,
+        amount: selectedPlanDetails.price,
+        currency: 'INR',
+        paymentMethod: 'credit_card',
+        cardLastFour: cardNumber.replace(/\s/g, '').slice(-4),
+        cardBrand: 'Visa', // This would normally be determined by the card number
+        timestamp: new Date().toISOString(),
+        status: 'completed'
+      });
+      
+      if (paymentResult.success) {
+        toast.success(`Successfully subscribed to ${selectedPlanDetails.name} plan!`);
+        setTimeout(() => {
+          navigate('/');
+        }, 2000);
+      } else {
+        toast.error(paymentResult.error || 'Payment processing failed');
+        setProcessing(false);
+      }
+    } catch (error) {
+      console.error('Payment processing error:', error);
+      toast.error('An error occurred while processing your payment');
       setProcessing(false);
-      toast.success(`Successfully subscribed to ${plans.find(p => p.id === selectedPlan)?.name} plan!`);
-      navigate('/');
-    }, 2000);
+    }
   };
 
-  const handleUpiPayment = () => {
+  const handleUpiPayment = async () => {
     setQrDialogOpen(true);
   };
 
-  const handlePaymentComplete = (method: string) => {
-    toast.success(`Payment initiated via ${method}. Once confirmed, your ${plans.find(p => p.id === selectedPlan)?.name} plan will be activated!`);
-    setTimeout(() => {
-      navigate('/');
-    }, 2000);
+  const handlePaymentComplete = async (method: string) => {
+    try {
+      // Get current user from localStorage
+      const userDataStr = localStorage.getItem('user');
+      if (!userDataStr) {
+        toast.error('User session expired. Please log in again.');
+        navigate('/login');
+        return;
+      }
+      
+      const userData = JSON.parse(userDataStr);
+      const selectedPlanDetails = plans.find(p => p.id === selectedPlan) || plans[1];
+      
+      // Record payment in MongoDB
+      const paymentResult = await recordPayment({
+        userId: userData.email,
+        planId: selectedPlan,
+        planName: selectedPlanDetails.name,
+        amount: selectedPlanDetails.price,
+        currency: 'INR',
+        paymentMethod: method.toLowerCase(),
+        timestamp: new Date().toISOString(),
+        status: 'completed'
+      });
+      
+      if (paymentResult.success) {
+        toast.success(`Payment initiated via ${method}. Once confirmed, your ${selectedPlanDetails.name} plan will be activated!`);
+        setTimeout(() => {
+          navigate('/');
+        }, 2000);
+      } else {
+        toast.error(paymentResult.error || 'Payment processing failed');
+      }
+    } catch (error) {
+      console.error('Payment processing error:', error);
+      toast.error('An error occurred while processing your payment');
+    }
   };
 
   const selectedPlanDetails = plans.find(p => p.id === selectedPlan) || plans[1];
