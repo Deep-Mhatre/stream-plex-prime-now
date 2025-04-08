@@ -21,7 +21,7 @@ const Plans = () => {
     {
       id: 'basic',
       name: 'Basic',
-      price: 8.99,
+      price: 49,
       quality: 'Good',
       resolution: '720p',
       devices: 1
@@ -29,7 +29,7 @@ const Plans = () => {
     {
       id: 'standard',
       name: 'Standard',
-      price: 14.99,
+      price: 129,
       quality: 'Better',
       resolution: '1080p',
       devices: 2
@@ -37,7 +37,7 @@ const Plans = () => {
     {
       id: 'premium',
       name: 'Premium',
-      price: 19.99,
+      price: 299,
       quality: 'Best',
       resolution: '4K+HDR',
       devices: 4
@@ -83,7 +83,7 @@ const Plans = () => {
               <CardContent className="p-6">
                 <h3 className="text-xl font-bold mb-2">{plan.name}</h3>
                 <div className="mb-6">
-                  <span className="text-3xl font-bold">${plan.price}</span>
+                  <span className="text-3xl font-bold">₹{plan.price}</span>
                   <span className="text-muted-foreground">/month</span>
                 </div>
                 

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -53,7 +52,7 @@ const SubscriptionPayment = () => {
     {
       id: 'basic',
       name: 'Basic',
-      price: 8.99,
+      price: 49,
       quality: 'Good',
       resolution: '720p',
       devices: 1
@@ -61,7 +60,7 @@ const SubscriptionPayment = () => {
     {
       id: 'standard',
       name: 'Standard',
-      price: 14.99,
+      price: 129,
       quality: 'Better',
       resolution: '1080p',
       devices: 2
@@ -69,7 +68,7 @@ const SubscriptionPayment = () => {
     {
       id: 'premium',
       name: 'Premium',
-      price: 19.99,
+      price: 299,
       quality: 'Best',
       resolution: '4K+HDR',
       devices: 4
@@ -258,7 +257,7 @@ const SubscriptionPayment = () => {
                     
                     <div className="pt-2">
                       <Button type="submit" className="w-full py-6 text-lg" disabled={processing}>
-                        {processing ? 'Processing...' : `Subscribe for $${selectedPlanDetails.price.toFixed(2)}/month`}
+                        {processing ? 'Processing...' : `Subscribe for ₹${selectedPlanDetails.price}/month`}
                       </Button>
                     </div>
                   </form>
@@ -374,7 +373,7 @@ const SubscriptionPayment = () => {
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
                     <span className="font-medium">{selectedPlanDetails.name} Plan</span>
-                    <span className="font-medium">${selectedPlanDetails.price.toFixed(2)}/mo</span>
+                    <span className="font-medium">₹{selectedPlanDetails.price}/mo</span>
                   </div>
                   <p className="text-sm text-muted-foreground">Monthly subscription</p>
                 </div>
@@ -406,7 +405,7 @@ const SubscriptionPayment = () => {
                 <div className="pt-2">
                   <div className="flex justify-between items-center font-bold">
                     <span>Total</span>
-                    <span>${selectedPlanDetails.price.toFixed(2)}/month</span>
+                    <span>₹{selectedPlanDetails.price}/month</span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
                     Billed monthly. Your subscription will automatically renew each month until canceled.
