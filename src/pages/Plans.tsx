@@ -3,8 +3,9 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Check } from 'lucide-react';
+import { Check, Info } from 'lucide-react';
 import Logo from '@/components/Logo';
+import { toast } from 'sonner';
 
 interface PlanOption {
   id: string;
@@ -48,6 +49,8 @@ const Plans = () => {
 
   const handleContinue = () => {
     console.log(`Selected plan: ${selectedPlan}`);
+    // Show a toast to inform the user
+    toast.info(`You've selected the ${plans.find(p => p.id === selectedPlan)?.name} plan`);
     // Navigate to subscription payment page with selected plan
     navigate(`/subscription?plan=${selectedPlan}`);
   };

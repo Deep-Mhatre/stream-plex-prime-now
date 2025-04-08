@@ -3,13 +3,21 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
-import { Check, CreditCard, PaymentIcon, Lock, CheckCircle2 } from 'lucide-react';
+import { Check, CreditCard, Lock, CheckCircle2, Scan, Share2, QrCode } from 'lucide-react';
 import Logo from '@/components/Logo';
 import { toast } from 'sonner';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface PlanOption {
   id: string;
@@ -79,6 +87,7 @@ const SubscriptionPayment = () => {
   const [cvv, setCvv] = useState('');
   const [processing, setProcessing] = useState(false);
   const [savePaymentMethod, setSavePaymentMethod] = useState(false);
+  const [qrDialogOpen, setQrDialogOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -119,6 +128,17 @@ const SubscriptionPayment = () => {
     }, 2000);
   };
 
+  const handleUpiPayment = () => {
+    setQrDialogOpen(true);
+  };
+
+  const handlePaymentComplete = (method: string) => {
+    toast.success(`Payment initiated via ${method}. Once confirmed, your ${plans.find(p => p.id === selectedPlan)?.name} plan will be activated!`);
+    setTimeout(() => {
+      navigate('/');
+    }, 2000);
+  };
+
   const selectedPlanDetails = plans.find(p => p.id === selectedPlan) || plans[1];
 
   return (
@@ -148,9 +168,10 @@ const SubscriptionPayment = () => {
               
               <Tabs defaultValue="card" className="w-full">
                 <div className="px-6">
-                  <TabsList className="grid grid-cols-2 mb-6">
+                  <TabsList className="grid grid-cols-3 mb-6">
                     <TabsTrigger value="card">Credit Card</TabsTrigger>
                     <TabsTrigger value="paypal">PayPal</TabsTrigger>
+                    <TabsTrigger value="upi">UPI</TabsTrigger>
                   </TabsList>
                 </div>
                 
@@ -256,12 +277,77 @@ const SubscriptionPayment = () => {
                     <Button className="w-full py-6" onClick={() => {
                       toast.info("Redirecting to PayPal...");
                       setTimeout(() => {
-                        toast.success(`Successfully subscribed to ${selectedPlanDetails.name} plan!`);
-                        navigate('/');
+                        handlePaymentComplete('PayPal');
                       }, 2000);
                     }}>
                       Pay with PayPal
                     </Button>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="upi" className="px-6 pb-6">
+                  <div className="text-center py-6 space-y-4">
+                    <div className="bg-blue-50 p-4 rounded-lg mb-4">
+                      <div className="flex items-center justify-center mb-2">
+                        <img 
+                          src="/lovable-uploads/11ec5fff-4875-4c94-b2e6-275c4ec0c786.png" 
+                          alt="UPI QR Code" 
+                          className="h-48 rounded-md border" 
+                        />
+                      </div>
+                      <p className="text-center font-medium">Scan to pay with any UPI app</p>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <div className="flex flex-col items-center gap-1">
+                        <p className="text-sm font-medium">Abhyudaya Cooperative Bank Ltd 9387</p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm">UPI ID: mhatredeep17@oksbi</p>
+                          <Button variant="outline" size="sm" className="h-7">
+                            <QrCode className="h-3.5 w-3.5 mr-1" />
+                            Copy
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 mt-4">
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" className="w-full">
+                            <QrCode className="mr-2 h-4 w-4" />
+                            View QR Code
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-md">
+                          <DialogHeader>
+                            <DialogTitle>Scan QR Code to Pay</DialogTitle>
+                            <DialogDescription>
+                              Use any UPI app to scan this QR code
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="flex items-center justify-center py-4">
+                            <img 
+                              src="/lovable-uploads/11ec5fff-4875-4c94-b2e6-275c4ec0c786.png" 
+                              alt="UPI QR Code" 
+                              className="max-w-full h-auto rounded-md" 
+                            />
+                          </div>
+                          <div className="flex flex-col items-center gap-2">
+                            <p className="font-medium">Abhyudaya Cooperative Bank Ltd</p>
+                            <p className="text-sm">UPI ID: mhatredeep17@oksbi</p>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+
+                      <Button className="w-full" onClick={() => handlePaymentComplete('UPI')}>
+                        I've Made the Payment
+                      </Button>
+                    </div>
+
+                    <p className="text-xs text-muted-foreground mt-4">
+                      After making the payment, click "I've Made the Payment" to complete your subscription
+                    </p>
                   </div>
                 </TabsContent>
               </Tabs>
