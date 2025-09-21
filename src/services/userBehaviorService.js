@@ -1,26 +1,25 @@
+// User behavior tracking service for Supabase
 
-// User behavior tracking service for MongoDB
+import { insertRecord } from './supabaseClient';
 
-import { insertDocument } from './mongoDBClient';
-
-// Collections
-const USER_VIEWS_COLLECTION = 'user_views';
-const USER_INTERACTIONS_COLLECTION = 'user_interactions';
+// Tables
+const USER_VIEWS_TABLE = 'user_views';
+const USER_INTERACTIONS_TABLE = 'user_interactions';
 
 // Track user view of movie
 export const trackMovieView = async (userId, movieId, movieTitle) => {
   try {
     const viewData = {
-      userId,
-      contentId: movieId,
-      contentTitle: movieTitle,
-      contentType: 'movie',
+      user_id: userId,
+      content_id: movieId.toString(),
+      content_title: movieTitle,
+      content_type: 'movie',
       action: 'view',
       timestamp: new Date().toISOString()
     };
     
-    await insertDocument(USER_VIEWS_COLLECTION, viewData);
-    return true;
+    const result = await insertRecord(USER_VIEWS_TABLE, viewData);
+    return result.success;
   } catch (error) {
     console.error('Error tracking movie view:', error);
     return false;
@@ -31,16 +30,16 @@ export const trackMovieView = async (userId, movieId, movieTitle) => {
 export const trackTrailerView = async (userId, movieId, movieTitle) => {
   try {
     const viewData = {
-      userId,
-      contentId: movieId,
-      contentTitle: movieTitle,
-      contentType: 'movie',
+      user_id: userId,
+      content_id: movieId.toString(),
+      content_title: movieTitle,
+      content_type: 'movie',
       action: 'trailer_view',
       timestamp: new Date().toISOString()
     };
     
-    await insertDocument(USER_VIEWS_COLLECTION, viewData);
-    return true;
+    const result = await insertRecord(USER_VIEWS_TABLE, viewData);
+    return result.success;
   } catch (error) {
     console.error('Error tracking trailer view:', error);
     return false;
@@ -51,16 +50,16 @@ export const trackTrailerView = async (userId, movieId, movieTitle) => {
 export const trackWatchMovie = async (userId, movieId, movieTitle) => {
   try {
     const viewData = {
-      userId,
-      contentId: movieId,
-      contentTitle: movieTitle,
-      contentType: 'movie',
+      user_id: userId,
+      content_id: movieId.toString(),
+      content_title: movieTitle,
+      content_type: 'movie',
       action: 'watch_movie',
       timestamp: new Date().toISOString()
     };
     
-    await insertDocument(USER_VIEWS_COLLECTION, viewData);
-    return true;
+    const result = await insertRecord(USER_VIEWS_TABLE, viewData);
+    return result.success;
   } catch (error) {
     console.error('Error tracking movie watch:', error);
     return false;
@@ -71,17 +70,17 @@ export const trackWatchMovie = async (userId, movieId, movieTitle) => {
 export const trackWatchTVShow = async (userId, showId, showTitle, episode = null) => {
   try {
     const viewData = {
-      userId,
-      contentId: showId,
-      contentTitle: showTitle,
-      contentType: 'tv',
+      user_id: userId,
+      content_id: showId.toString(),
+      content_title: showTitle,
+      content_type: 'tv',
       action: 'watch_show',
       episode,
       timestamp: new Date().toISOString()
     };
     
-    await insertDocument(USER_VIEWS_COLLECTION, viewData);
-    return true;
+    const result = await insertRecord(USER_VIEWS_TABLE, viewData);
+    return result.success;
   } catch (error) {
     console.error('Error tracking TV show watch:', error);
     return false;
@@ -92,15 +91,15 @@ export const trackWatchTVShow = async (userId, showId, showTitle, episode = null
 export const trackSearch = async (userId, query, resultCount) => {
   try {
     const searchData = {
-      userId,
+      user_id: userId,
       query,
-      resultCount,
+      result_count: resultCount,
       action: 'search',
       timestamp: new Date().toISOString()
     };
     
-    await insertDocument(USER_INTERACTIONS_COLLECTION, searchData);
-    return true;
+    const result = await insertRecord(USER_INTERACTIONS_TABLE, searchData);
+    return result.success;
   } catch (error) {
     console.error('Error tracking search:', error);
     return false;
@@ -111,17 +110,17 @@ export const trackSearch = async (userId, query, resultCount) => {
 export const trackRating = async (userId, contentId, contentTitle, contentType, rating) => {
   try {
     const ratingData = {
-      userId,
-      contentId,
-      contentTitle,
-      contentType,
+      user_id: userId,
+      content_id: contentId.toString(),
+      content_title: contentTitle,
+      content_type: contentType,
       rating,
       action: 'rate',
       timestamp: new Date().toISOString()
     };
     
-    await insertDocument(USER_INTERACTIONS_COLLECTION, ratingData);
-    return true;
+    const result = await insertRecord(USER_INTERACTIONS_TABLE, ratingData);
+    return result.success;
   } catch (error) {
     console.error('Error tracking rating:', error);
     return false;

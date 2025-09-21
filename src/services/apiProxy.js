@@ -1,23 +1,30 @@
+// API proxy service with Supabase integration
+import { insertRecord } from './supabaseClient';
 
-// API proxy service with MongoDB integration
-import { insertDocument } from './mongoDBClient';
-
-// Collections
-const USER_VIEWS_COLLECTION = 'user_views';
-const USER_AUTH_COLLECTION = 'user_auth';
-const USER_WATCHLIST_COLLECTION = 'watchlist';
+// Tables
+const USER_VIEWS_TABLE = 'user_views';
+const USER_AUTH_TABLE = 'user_auth';
+const WATCHLIST_TABLE = 'watchlist';
 
 // Handle track-view endpoint
 export const handleTrackView = async (requestData) => {
   console.log('Tracking user behavior:', requestData);
   
   try {
-    await insertDocument(USER_VIEWS_COLLECTION, {
-      ...requestData,
-      recordedAt: new Date().toISOString()
-    });
+    const supabaseData = {
+      user_id: requestData.userId,
+      content_id: requestData.contentId?.toString(),
+      content_title: requestData.contentTitle,
+      content_type: requestData.contentType,
+      action: requestData.action,
+      episode: requestData.episode,
+      timestamp: requestData.timestamp,
+      recorded_at: new Date().toISOString()
+    };
     
-    return { success: true };
+    const result = await insertRecord(USER_VIEWS_TABLE, supabaseData);
+    
+    return result;
   } catch (error) {
     console.error('Error tracking view:', error);
     return { success: false, error: error.message };
@@ -29,12 +36,16 @@ export const handleTrackAuth = async (requestData) => {
   console.log('Tracking auth event:', requestData);
   
   try {
-    await insertDocument(USER_AUTH_COLLECTION, {
-      ...requestData,
-      recordedAt: new Date().toISOString()
-    });
+    const supabaseData = {
+      user_id: requestData.userId,
+      action: requestData.action,
+      timestamp: requestData.timestamp,
+      recorded_at: new Date().toISOString()
+    };
     
-    return { success: true };
+    const result = await insertRecord(USER_AUTH_TABLE, supabaseData);
+    
+    return result;
   } catch (error) {
     console.error('Error tracking auth:', error);
     return { success: false, error: error.message };
@@ -46,12 +57,18 @@ export const handleWatchlistUpdate = async (requestData) => {
   console.log('Updating user watchlist:', requestData);
   
   try {
-    await insertDocument(USER_WATCHLIST_COLLECTION, {
-      ...requestData,
-      recordedAt: new Date().toISOString()
-    });
+    const supabaseData = {
+      user_id: requestData.userId,
+      content_id: requestData.contentId?.toString(),
+      content_title: requestData.contentTitle,
+      content_type: requestData.contentType,
+      added_at: requestData.addedAt,
+      recorded_at: new Date().toISOString()
+    };
     
-    return { success: true };
+    const result = await insertRecord(WATCHLIST_TABLE, supabaseData);
+    
+    return result;
   } catch (error) {
     console.error('Error updating watchlist:', error);
     return { success: false, error: error.message };

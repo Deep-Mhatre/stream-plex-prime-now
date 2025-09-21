@@ -1,24 +1,24 @@
-
-// User-related services for MongoDB tracking
+// User-related services for Supabase
 import { 
-  insertDocument, 
-  findDocuments, 
-  updateDocument,
-  getCollection 
-} from './mongoDBClient';
+  insertRecord, 
+  selectRecords, 
+  updateRecord,
+  deleteRecord,
+  supabase
+} from './supabaseClient';
 import bcrypt from 'bcryptjs';
 
-// Collections
-const USERS_COLLECTION = 'users';
-const WATCHLIST_COLLECTION = 'watchlist';
-const USER_NAVIGATION_COLLECTION = 'user_navigation';
+// Tables
+const USERS_TABLE = 'users';
+const WATCHLIST_TABLE = 'watchlist';
+const USER_NAVIGATION_TABLE = 'user_navigation';
 
 // Create a new user (signup)
 export const createUser = async (name, email, password) => {
   try {
     // Check if user already exists
-    const existingUsers = await findDocuments(USERS_COLLECTION, { email });
-    if (existingUsers.length > 0) {
+    const existingUsers = await selectRecords(USERS_TABLE, { email });
+    if (existingUsers.success && existingUsers.data.length > 0) {
       throw new Error('User with this email already exists');
     }
 
@@ -35,12 +35,16 @@ export const createUser = async (name, email, password) => {
       password: hashedPassword,
       initials,
       avatar: null,
-      createdAt: new Date().toISOString(),
-      lastLogin: new Date().toISOString()
+      created_at: new Date().toISOString(),
+      last_login: new Date().toISOString()
     };
     
-    // Insert user into MongoDB
-    const result = await insertDocument(USERS_COLLECTION, user);
+    // Insert user into Supabase
+    const result = await insertRecord(USERS_TABLE, user);
+    
+    if (!result.success) {
+      throw new Error(result.error);
+    }
     
     // Create a simplified user object for the client (without password)
     const clientUser = {
@@ -49,8 +53,8 @@ export const createUser = async (name, email, password) => {
       initials,
       avatar: null,
       watchlist: [],
-      createdAt: user.createdAt,
-      lastLogin: user.lastLogin
+      createdAt: user.created_at,
+      lastLogin: user.last_login
     };
     
     // Also store in localStorage for the current session
@@ -67,12 +71,12 @@ export const createUser = async (name, email, password) => {
 export const loginUser = async (email, password) => {
   try {
     // Find user by email
-    const users = await findDocuments(USERS_COLLECTION, { email });
-    if (users.length === 0) {
+    const usersResult = await selectRecords(USERS_TABLE, { email });
+    if (!usersResult.success || usersResult.data.length === 0) {
       return { success: false, error: 'Invalid email or password' };
     }
     
-    const user = users[0];
+    const user = usersResult.data[0];
     
     // Compare passwords
     const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -81,7 +85,7 @@ export const loginUser = async (email, password) => {
     }
     
     // Update last login time
-    await updateDocument(USERS_COLLECTION, { email }, { lastLogin: new Date().toISOString() });
+    await updateRecord(USERS_TABLE, { email }, { last_login: new Date().toISOString() });
     
     // Create a simplified user object for the client (without password)
     const clientUser = {
@@ -94,13 +98,15 @@ export const loginUser = async (email, password) => {
     };
     
     // Get user's watchlist
-    const watchlistItems = await findDocuments(WATCHLIST_COLLECTION, { userId: user.email });
-    clientUser.watchlist = watchlistItems.map(item => ({
-      id: item.contentId,
-      title: item.contentTitle,
-      type: item.contentType,
-      addedAt: item.addedAt
-    }));
+    const watchlistResult = await selectRecords(WATCHLIST_TABLE, { user_id: user.email });
+    if (watchlistResult.success) {
+      clientUser.watchlist = watchlistResult.data.map(item => ({
+        id: item.content_id,
+        title: item.content_title,
+        type: item.content_type,
+        addedAt: item.added_at
+      }));
+    }
     
     // Store in localStorage for the current session
     localStorage.setItem('user', JSON.stringify(clientUser));
@@ -137,24 +143,27 @@ export const addToWatchlist = async (userId, contentId, contentTitle, contentTyp
       }
     }
     
-    // 2. Then store in MongoDB
+    // 2. Then store in Supabase
     const watchlistItem = {
-      userId,
-      contentId,
-      contentTitle,
-      contentType,
-      addedAt: new Date().toISOString()
+      user_id: userId,
+      content_id: contentId,
+      content_title: contentTitle,
+      content_type: contentType,
+      added_at: new Date().toISOString()
     };
     
     // Check if item already exists in watchlist
-    const existingItems = await findDocuments(WATCHLIST_COLLECTION, {
-      userId,
-      contentId
+    const existingItems = await selectRecords(WATCHLIST_TABLE, {
+      user_id: userId,
+      content_id: contentId
     });
     
-    if (existingItems.length === 0) {
+    if (!existingItems.success || existingItems.data.length === 0) {
       // Item doesn't exist, add it
-      await insertDocument(WATCHLIST_COLLECTION, watchlistItem);
+      const result = await insertRecord(WATCHLIST_TABLE, watchlistItem);
+      if (!result.success) {
+        throw new Error(result.error);
+      }
     }
     
     return { success: true };
@@ -181,10 +190,15 @@ export const removeFromWatchlist = async (userId, contentId) => {
       localStorage.setItem('user', JSON.stringify(userData));
     }
     
-    // 2. Then remove from MongoDB
-    await getCollection(WATCHLIST_COLLECTION).then(collection => 
-      collection.deleteOne({ userId, contentId })
-    );
+    // 2. Then remove from Supabase
+    const result = await deleteRecord(WATCHLIST_TABLE, { 
+      user_id: userId, 
+      content_id: contentId 
+    });
+    
+    if (!result.success) {
+      throw new Error(result.error);
+    }
     
     return { success: true };
   } catch (error) {
@@ -205,15 +219,17 @@ export const getUserWatchlist = async (userId) => {
       }
     }
     
-    // If not in localStorage or empty, get from MongoDB
+    // If not in localStorage or empty, get from Supabase
     if (userId) {
-      const watchlistItems = await findDocuments(WATCHLIST_COLLECTION, { userId });
-      return watchlistItems.map(item => ({
-        id: item.contentId,
-        title: item.contentTitle,
-        type: item.contentType,
-        addedAt: item.addedAt
-      }));
+      const result = await selectRecords(WATCHLIST_TABLE, { user_id: userId });
+      if (result.success) {
+        return result.data.map(item => ({
+          id: item.content_id,
+          title: item.content_title,
+          type: item.content_type,
+          addedAt: item.added_at
+        }));
+      }
     }
     
     return [];
@@ -227,13 +243,13 @@ export const getUserWatchlist = async (userId) => {
 export const trackNavigation = async (userId, page) => {
   try {
     const navigationData = {
-      userId,
+      user_id: userId,
       page,
       timestamp: new Date().toISOString()
     };
     
-    await insertDocument(USER_NAVIGATION_COLLECTION, navigationData);
-    return { success: true };
+    const result = await insertRecord(USER_NAVIGATION_TABLE, navigationData);
+    return result;
   } catch (error) {
     console.error('Error tracking navigation:', error);
     return { success: false, error: error.message };

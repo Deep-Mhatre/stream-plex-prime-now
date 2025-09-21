@@ -1,10 +1,9 @@
+// Payment services for Supabase
+import { insertRecord, selectRecords, updateRecord } from './supabaseClient';
 
-// Payment services for MongoDB
-import { insertDocument, findDocuments, updateDocument } from './mongoDBClient';
-
-// Collections
-const PAYMENTS_COLLECTION = 'payments';
-const SUBSCRIPTIONS_COLLECTION = 'subscriptions';
+// Tables
+const PAYMENTS_TABLE = 'payments';
+const SUBSCRIPTIONS_TABLE = 'subscriptions';
 
 // Record a new payment
 export const recordPayment = async (paymentData) => {
@@ -19,13 +18,31 @@ export const recordPayment = async (paymentData) => {
       paymentData.timestamp = new Date().toISOString();
     }
     
+    // Convert to Supabase format
+    const supabasePaymentData = {
+      user_id: paymentData.userId,
+      plan_id: paymentData.planId,
+      plan_name: paymentData.planName,
+      amount: paymentData.amount,
+      currency: paymentData.currency || 'INR',
+      payment_method: paymentData.paymentMethod,
+      card_last_four: paymentData.cardLastFour,
+      card_brand: paymentData.cardBrand,
+      status: paymentData.status || 'completed',
+      timestamp: paymentData.timestamp
+    };
+    
     // Insert payment record
-    const result = await insertDocument(PAYMENTS_COLLECTION, paymentData);
+    const result = await insertRecord(PAYMENTS_TABLE, supabasePaymentData);
+    
+    if (!result.success) {
+      throw new Error(result.error);
+    }
     
     // Update subscription status
     await updateSubscription(paymentData);
     
-    return { success: true, paymentId: result.insertedId };
+    return { success: true, paymentId: result.data[0].id };
   } catch (error) {
     console.error('Error recording payment:', error);
     return { success: false, error: error.message };
@@ -42,34 +59,44 @@ const updateSubscription = async (paymentData) => {
     expiryDate.setMonth(expiryDate.getMonth() + 1);
     
     // Check if user already has a subscription
-    const existingSubscriptions = await findDocuments(SUBSCRIPTIONS_COLLECTION, { userId });
+    const existingSubscriptions = await selectRecords(SUBSCRIPTIONS_TABLE, { user_id: userId });
     
-    if (existingSubscriptions.length > 0) {
+    if (existingSubscriptions.success && existingSubscriptions.data.length > 0) {
       // Update existing subscription
-      await updateDocument(SUBSCRIPTIONS_COLLECTION, 
-        { userId },
+      const updateResult = await updateRecord(SUBSCRIPTIONS_TABLE, 
+        { user_id: userId },
         {
-          planId,
+          plan_id: planId,
           amount,
           status: 'active',
-          lastPayment: new Date().toISOString(),
-          expiryDate: expiryDate.toISOString(),
-          paymentMethod
+          last_payment: new Date().toISOString(),
+          expiry_date: expiryDate.toISOString(),
+          payment_method: paymentMethod
         }
       );
+      
+      if (!updateResult.success) {
+        throw new Error(updateResult.error);
+      }
     } else {
       // Create new subscription
-      await insertDocument(SUBSCRIPTIONS_COLLECTION, {
-        userId,
-        planId,
+      const subscriptionData = {
+        user_id: userId,
+        plan_id: planId,
         amount,
         status: 'active',
-        startDate: new Date().toISOString(),
-        lastPayment: new Date().toISOString(),
-        expiryDate: expiryDate.toISOString(),
-        paymentMethod,
-        autoRenew: true
-      });
+        start_date: new Date().toISOString(),
+        last_payment: new Date().toISOString(),
+        expiry_date: expiryDate.toISOString(),
+        payment_method: paymentMethod,
+        auto_renew: true
+      };
+      
+      const insertResult = await insertRecord(SUBSCRIPTIONS_TABLE, subscriptionData);
+      
+      if (!insertResult.success) {
+        throw new Error(insertResult.error);
+      }
     }
     
     return true;
@@ -82,19 +109,19 @@ const updateSubscription = async (paymentData) => {
 // Get user subscription status
 export const getUserSubscription = async (userId) => {
   try {
-    const subscriptions = await findDocuments(SUBSCRIPTIONS_COLLECTION, { userId });
+    const result = await selectRecords(SUBSCRIPTIONS_TABLE, { user_id: userId });
     
-    if (subscriptions.length > 0) {
-      const subscription = subscriptions[0];
+    if (result.success && result.data.length > 0) {
+      const subscription = result.data[0];
       
       // Check if subscription is expired
       const now = new Date();
-      const expiryDate = new Date(subscription.expiryDate);
+      const expiryDate = new Date(subscription.expiry_date);
       
       if (now > expiryDate) {
         // Subscription is expired
-        await updateDocument(SUBSCRIPTIONS_COLLECTION, 
-          { userId },
+        await updateRecord(SUBSCRIPTIONS_TABLE, 
+          { user_id: userId },
           { status: 'expired' }
         );
         subscription.status = 'expired';
@@ -113,8 +140,12 @@ export const getUserSubscription = async (userId) => {
 // Get payment history for a user
 export const getUserPaymentHistory = async (userId) => {
   try {
-    const payments = await findDocuments(PAYMENTS_COLLECTION, { userId }, { sort: { timestamp: -1 } });
-    return payments;
+    const result = await selectRecords(PAYMENTS_TABLE, 
+      { user_id: userId }, 
+      { orderBy: { column: 'timestamp', ascending: false } }
+    );
+    
+    return result.success ? result.data : [];
   } catch (error) {
     console.error('Error getting payment history:', error);
     return [];
